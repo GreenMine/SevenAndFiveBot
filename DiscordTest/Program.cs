@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace SevenAndFiveBot
@@ -30,19 +31,19 @@ namespace SevenAndFiveBot
             connection.Close();*/
             Bot.MainTask(args).ConfigureAwait(false).GetAwaiter().GetResult();
         }
-/*        static async void doAsync(AccoutConnector connector)
-        {
-            int iter = 1;
-            while (true)
-            {
-                User user = await connector.FindUser(1978);
-                await user.addLevel();
-                Console.WriteLine(user.Level);
-                //await Task.Delay(5000);
-                Console.WriteLine(iter);
+        /*        static async void doAsync(AccoutConnector connector)
+                {
+                    int iter = 1;
+                    while (true)
+                    {
+                        User user = await connector.FindUser(1978);
+                        await user.addLevel();
+                        Console.WriteLine(user.Level);
+                        //await Task.Delay(5000);
+                        Console.WriteLine(iter);
 
-                iter++;
-            }
-        }*/
+                        iter++;
+                    }
+                }*/
     }
 }

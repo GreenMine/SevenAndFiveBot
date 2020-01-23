@@ -9,6 +9,11 @@ using System.Threading.Tasks;
 
 namespace SevenAndFiveBot.AccoutSystem.Entities
 {
+    public struct TopReturn
+    {
+        public ulong UserId { get; set; }
+        public string Value { get; set; }
+    }
     class MySqlWorker
     {
         private MySqlConnection connection;
@@ -40,17 +45,35 @@ namespace SevenAndFiveBot.AccoutSystem.Entities
             ulong id = (ulong)await request.ExecuteScalarAsync();
             return new User(this) { Id = id, UserId = user_id };
         }
-
+        
         public async Task UpdateValueAsync(ulong user_id, string field, object value)
         {
             MySqlCommand request = new MySqlCommand("UPDATE `users` SET `" + field + "` = '" + value + "' WHERE `user_id` = " + user_id, connection);
             await request.ExecuteNonQueryAsync();
         }
 
-/*        public async Task<object> GetValueAsync(ulong user_id, string field)
+        public async IAsyncEnumerable<TopReturn> getTopByDesc(string by, int count)
         {
-            MySqlCommand request = new MySqlCommand("SELECT " + field + " FROM `users` WHERE `user_id` = " + user_id);
-            return await request.ExecuteScalarAsync();
+            MySqlCommand request = new MySqlCommand("SELECT user_id, " + by + " FROM `users` ORDER BY `" + by + "` DESC LIMIT " + count, connection);
+            DbDataReader reader = await request.ExecuteReaderAsync();
+            while(await reader.ReadAsync())
+            {
+                yield return new TopReturn() { UserId = (ulong)reader[0], Value = reader[1].ToString() };
+            }
+            await reader.CloseAsync();
+
+        }
+/*        public static IEnumerable<int> getArrayOfRandomNumber(int count)
+        {
+            Random random = new Random();
+            for (int i = 0; i <= count; i++)
+                yield return random.Next();
         }*/
+
+        /*        public async Task<object> GetValueAsync(ulong user_id, string field)
+                {
+                    MySqlCommand request = new MySqlCommand("SELECT " + field + " FROM `users` WHERE `user_id` = " + user_id);
+                    return await request.ExecuteScalarAsync();
+                }*/
     }
 }
