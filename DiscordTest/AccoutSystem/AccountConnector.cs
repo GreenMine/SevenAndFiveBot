@@ -6,6 +6,8 @@ using System.Threading.Tasks;
 using SevenAndFiveBot.AccoutSystem.Entities;
 using MySql.Data.MySqlClient;
 using static SevenAndFiveBot.AccoutSystem.User;
+using System.Linq;
+using System.Collections.Generic;
 
 namespace SevenAndFiveBot.AccoutSystem
 {
@@ -13,9 +15,10 @@ namespace SevenAndFiveBot.AccoutSystem
     {
         internal MySqlWorker worker;
 
+        public event Action<User> LevelUpdate;
         public AccountConnector(MySqlConnection conn)
         {
-            this.worker = new MySqlWorker(conn);
+            this.worker = new MySqlWorker(conn, this);
         }
 
         public async Task<User> FindUser(ulong user_id)
@@ -31,31 +34,38 @@ namespace SevenAndFiveBot.AccoutSystem
             return user;
         }
 
-        public User ToUser(DataRow table)
+        public async Task<Reps> FindRep(ulong user_id)
         {
-            return new User(this.worker) { Id = Convert.ToUInt64(table["id"]), UserId = (ulong)table["user_id"], Money = (int)table["money"], VoiceOnline = (uint)table["voice_online"], Level = (uint)table["level"], DailyReward = table["daily_reward"].ToString(), Warns = ToWarns((string)table["warn"]) };
+            DataRow user_row = await worker.GetReps(user_id);
+            //Console.WriteLine("Nil? " + user == null ? "Nil" : "Dont nil");
+            if (user_row == null)
+            {
+                await worker.CreateUser(user_id);
+                user_row = await worker.GetReps(user_id);
+            }
+            return ToReps(user_row); 
         }
 
-        public Warns ToWarns(string warns)
+        private User ToUser(DataRow table)
         {
-            string[] array_of_warns = warns.Split(',');
-            Warns return_warn = new Warns();
-            foreach(string value in array_of_warns)
-            {
-                switch(value)
-                {
-                    case "1":
-                        return_warn.First = true;
-                    break;
-                    case "2":
-                        return_warn.Second = true;
-                    break;
-                    case "3":
-                        return_warn.Third = true;
-                   break;
-                }
-            }
-            return return_warn;
+            return new User(this.worker) { Id = Convert.ToUInt64(table["id"]), UserId = (ulong)table["user_id"], Money = (int)table["money"], VoiceOnline = (uint)table["voice_online"], Level = (uint)table["level"], DailyReward = table["daily_reward"].ToString(), Warns = (short)table["warn"], PlusRep = (uint)table["plus_rep"], MinusRep = (uint)table["minus_rep"] };
+        }
+
+        private Reps ToReps(DataRow table)
+        {
+            return new Reps(this.worker) { PlusRep = (uint)table["plus_rep"], MinusRep = (uint)table["minus_rep"], ListPlusRep = StringToList(table["list_plus_rep"]), ListMinusRep = StringToList(table["list_minus_rep"]) };
+        }
+
+        public void InvokeLevel(User user)
+        {
+            LevelUpdate?.Invoke(user);
+        }
+
+        private List<uint> StringToList(object obj)
+        {
+            if (obj.ToString() == "")
+                return null;
+            return obj.ToString().Split(',').Select(xarg => UInt32.Parse(xarg)).ToList();
         }
 /*        public LevelOfWarns[] ToWarns(string warns)
         {

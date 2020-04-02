@@ -2,20 +2,28 @@
 using SevenAndFiveBot.Entities;
 using DSharpPlus;
 using DSharpPlus.Entities;
-using DSharpPlus.EventArgs;
 using DSharpPlus.Net.Models;
 using MySql.Data.MySqlClient;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using static SevenAndFiveBot.Entities.PrivateSystem;
 using static DSharpPlus.Entities.DiscordEmbedBuilder;
-using System.Diagnostics;
 using SevenAndFiveBot.AccoutSystem.Games;
 using SevenAndFiveBot.AccoutSystem.Entities;
+using SevenAndFiveBot.AccoutSystem.Shop;
+using SevenAndFiveBot.Commands.CUser;
+using SevenAndFiveBot.Commands.Help;
+using SevenAndFiveBot.Commands.Games;
+using DSharpPlus.CommandsNext;
+using Microsoft.Extensions.DependencyInjection;
+using SevenAndFiveBot.Commands;
+using SevenAndFiveBot.Commands.CShop;
+using DSharpPlus.CommandsNext.Exceptions;
+using SevenAndFiveBot.AccoutSystem.Games.Roulette;
+using SevenAndFiveBot.Exceptions.Command;
 
 namespace SevenAndFiveBot
 {
@@ -23,12 +31,45 @@ namespace SevenAndFiveBot
     {
 
         static DiscordClient discord;
+        static CommandsNextExtension commands;
+
         private static Config _config;
         private static AccountConnector connector;
+        private static ShopWorker shop;
 
         private const string path_to_config = "config.json";
         private static List<PrivateChannel> private_channels = new List<PrivateChannel>();
         private static List<RandomGame> random_duel = new List<RandomGame>();
+        private static List<VoiceOnline> voiceOnlines = new List<VoiceOnline>();
+        private static RouletteGame rouletteGame = new RouletteGame();
+
+        private static Levels[] levels =
+        {
+            new Levels() {CountMinutes = 10, RoleId = 693078664996192337, Name = "Asteroid"},
+            new Levels() {CountMinutes = 100, RoleId = 693079345996103720, Name = "Pluto"},
+            new Levels() {CountMinutes = 500, RoleId = 693079566016839701, Name = "Neptune"},
+            new Levels() {CountMinutes = 1000, RoleId = 693079612305178665, Name = "Uranus"},
+            new Levels() {CountMinutes = 2500, RoleId = 693079703837212683, Name = "Saturn"},
+            new Levels() {CountMinutes = 5000, RoleId = 693079763891257464, Name = "Jupiter"},
+            new Levels() {CountMinutes = 10000, RoleId = 693079823299379252, Name = "Mars"},
+            new Levels() {CountMinutes = 15000, RoleId = 693079906959228968, Name = "Earth"},
+            new Levels() {CountMinutes = 30000, RoleId = 693080279513825411, Name = "Venus"},
+            new Levels() {CountMinutes = 45000, RoleId = 693080368953294850, Name = "Mercury"},
+            new Levels() {CountMinutes = 60000, RoleId = 693080442152157195, Name = "Sun"},
+            new Levels() {CountMinutes = 75000, RoleId = 693080769345880115, Name = "Space"},
+        };
+        /*@Asteroid - 10 минут.
+        @Pluto –  100 минут.
+        @Neptune – 500 минут.
+        @Uranus – 1000 минут.
+        @Saturn – 2500 минут.
+        @Jupiter – 5000 минут.
+        @Mars - 10000 минут.
+        @Earth – 15000 минут.
+        @Venus – 30000 минут.
+        @Mercury – 45000 минут.
+        @Sun – 60000 минут.
+        @Space – 75000 минут.*/
         internal static async Task MainTask(string[] args)
         {
 
@@ -39,7 +80,16 @@ namespace SevenAndFiveBot
             string connectionString = "server=localhost;user=root;database=sevenandfive;password=;";
             MySqlConnection connection = new MySqlConnection(connectionString);
             connector = new AccountConnector(connection);
+            connector.LevelUpdate += Connector_LevelUpdate;
             connection.Open();
+
+            Reps reps = await connector.FindRep(144686801687281664);
+
+            Console.WriteLine(reps.hasUser(127));
+
+            Environment.Exit(1337);
+
+            shop = new ShopWorker(connection);
 
             discord = new DiscordClient(new DiscordConfiguration
             {
@@ -47,12 +97,114 @@ namespace SevenAndFiveBot
                 TokenType = TokenType.Bot,
                 UseInternalLogHandler = true,
                 LogLevel = LogLevel.Debug
+                
             }); ;
-            discord.MessageCreated += Discord_MessageCreated;
+            //discord.MessageCreated += Discord_MessageCreated;
             discord.VoiceStateUpdated += Discord_VoiceStateUpdated;
+            discord.MessageCreated += Discord_MessageCreated;
+
+            var deps = new ServiceCollection()
+                                              .AddSingleton(connector)
+                                              .AddSingleton(shop)
+                                              .AddSingleton(private_channels)
+                                              .AddSingleton(rouletteGame)
+                                              .AddSingleton(levels)
+                                              .BuildServiceProvider();
+
+            commands = discord.UseCommandsNext(new CommandsNextConfiguration
+            {
+                StringPrefixes = new[] { "!" },
+                Services = deps
+            });
+
+
+            commands.CommandErrored += Commands_CommandErrored;
+
+            commands.RegisterConverter(new TopConverter());
+            commands.RegisterConverter(new ShopConverter());
+            commands.RegisterConverter(new RouletteGameConverter());
+
+            commands.RegisterCommands<UserCommands>();
+            commands.RegisterCommands<TypicalCommands>();
+            commands.RegisterCommands<ShopCommands>();
+            commands.RegisterCommands<AdminCommands>();
+            commands.RegisterCommands<PrivateChannelCommands>();
+            commands.RegisterCommands<DuelGameCommands>();
+            commands.RegisterCommands<RouletteGameCommand>();
+
+            commands.SetHelpFormatter<HelpFormatter>();
             await discord.ConnectAsync();
+
+            CasinoWorker();
+            
             privateChecher();
+            
             await Task.Delay(-1);
+        }
+        
+        private static async Task Commands_CommandErrored(CommandErrorEventArgs e)
+        {
+            if (e.Exception is System.ArgumentException)
+            {
+                if (e.Command.Name != "bet")
+                {
+                    var helpCommand = commands.RegisteredCommands.First(p => p.Key == "help").Value;
+                    var fakeContext = commands.CreateFakeContext(e.Context.User, e.Context.Channel, e.Context.Message.Content, "help", helpCommand, e.Command.Name);
+                    await commands.ExecuteCommandAsync(fakeContext);
+                }else
+                {
+                    await ((DiscordMember)e.Context.User).SendMessageAsync(embed: Helper.ErrorEmbed("Неверный синтаксис команды!"));
+                }
+            }
+            else if (e.Exception is System.InvalidOperationException)
+            {
+                await e.Context.RespondAsync(embed: new DiscordEmbedBuilder()
+                {
+                    Title = e.Exception.Message,
+                    Color = DiscordColor.Red
+                }.Build());
+            }else if(e.Exception is SendMessageException exe)
+            {
+                await ((DiscordMember)exe.User).SendMessageAsync(embed: Helper.ErrorEmbed(exe.Message));
+            }else if(e.Exception is ChecksFailedException ex)
+            {
+                await e.Context.RespondAsync(embed: new DiscordEmbedBuilder() { Color = DiscordColor.Red, Title = "Ошибка: Недостаточно прав!" }.Build());
+            }else if(e.Exception is CommandNotFoundException) {}
+            else 
+            {
+                await e.Context.RespondAsync(embed: new DiscordEmbedBuilder() { Color = DiscordColor.Red, Title = "Ошибка" }.AddField("Текст ошибки:", $"{e.Exception.GetType()}: {e.Exception.Message ?? "<no message>"}").Build());
+            }
+            //e.Context.Client.DebugLogger.LogMessage(LogLevel.Error, "SevenAndFiveBot", $"{e.Context.User.Username} tried executing '{e.Command?.QualifiedName ?? "<unknown command>"}' but it errored: {e.Exception.GetType()}: {e.Exception.Message ?? "<no message>"}", DateTime.Now);
+        }
+
+        private static async void Connector_LevelUpdate(User user)
+        {
+            DiscordGuild guild = discord.Guilds[_config.GuildId];
+            DiscordMember member = guild.Members[user.UserId];
+            DiscordRole give_role = guild.GetRole(levels[user.Level-1].RoleId);
+            await member.GrantRoleAsync(give_role, "Level UP blyat'!");
+            await member.SendMessageAsync($"**Поздравляем!** __Вы достигли уровня \"{give_role.Name}\", ваш онлайн составляет {user.VoiceOnline} минут!__");  
+        }
+
+        public static async void CasinoWorker()
+        {
+            await Task.Delay(10000);
+            DiscordChannel casino_channel = discord.Guilds[_config.GuildId].GetChannel(693825578809425950);
+            while(true)
+            {
+                await rouletteGame.Start(casino_channel);
+                await rouletteGame.StartTimer();
+                if (rouletteGame.betters[0].Count != 0 || rouletteGame.betters[1].Count != 0 || rouletteGame.betters[2].Count != 0)
+                {
+                    Winner winners = rouletteGame.getWinner();
+                    TypeOfBet winners_type = winners.Type;
+                    int coef = winners_type == TypeOfBet.Green ? 14 : 2;
+                    foreach (RouletteUser user in rouletteGame.betters[(int)winners_type])
+                        await user.BetUser.addMoney((int)user.Bet * coef);
+                    await rouletteGame.SetWinners(winners);
+                }
+                await rouletteGame.Restart();
+            }
         }
 
         public static async void privateChecher()
@@ -74,6 +226,34 @@ namespace SevenAndFiveBot
 
         private static async Task Discord_VoiceStateUpdated(DSharpPlus.EventArgs.VoiceStateUpdateEventArgs e)
         {
+            bool has_in_voice_online = false;
+            VoiceOnline this_channel_user = null;
+            foreach (VoiceOnline online in voiceOnlines)
+            {
+                if (e.User.Id == online.user.Id)
+                {
+                    has_in_voice_online = true;
+                    this_channel_user = online;
+                    break;
+                }
+            }
+            if(has_in_voice_online)
+            {
+                if(e.Channel == null)// || e.Before != e.After
+                {
+                    User account = await connector.FindUser(e.User.Id);
+                    voiceOnlines.Remove(this_channel_user);
+                    TimeSpan count_seconds = DateTime.Now - this_channel_user.start;
+                    int minutes_in_voice_chat = (int)(count_seconds.TotalSeconds / 60);
+                    await account.addVoiceOnline(minutes_in_voice_chat);
+                    await account.addMoney(minutes_in_voice_chat);
+                    while (account.VoiceOnline >= levels[account.Level].CountMinutes)
+                        await account.addLevel();
+                }
+            }else
+            {
+                voiceOnlines.Add(new VoiceOnline() { start = DateTime.Now, user = e.User });
+            }
             if (e.Channel != null)
             {
                 if (e.Channel.Id == _config.PrivateId)
@@ -90,8 +270,8 @@ namespace SevenAndFiveBot
                         DiscordOverwriteBuilder[] overwrites = { builder };
 
                         Task<DiscordChannel> new_channel = e.Guild.CreateChannelAsync("Private by " + e.User.Username, ChannelType.Voice, parent, userLimit: 3, overwrites: overwrites); // Create new private channel
+                        await new_channel.Result.PlaceMemberAsync((DiscordMember)e.User); // Move admin(creator of the channel) to new private channel
                         private_channels.Add(new PrivateChannel() { channel = new_channel.Result, user = e.User });
-                        await new_channel.Result.PlaceMemberAsync((DiscordMember)e.User); // Move admin(creator of channel) to new private channel
                     }
                     else
                     {
@@ -108,253 +288,8 @@ namespace SevenAndFiveBot
 
         private static async Task Discord_MessageCreated(DSharpPlus.EventArgs.MessageCreateEventArgs e)
         {
-            string message = e.Message.Content;
-            if (!e.Author.IsBot)
-            {
-                if (e.Message.Content.StartsWith('!'))
-                {
-                    string[] command = e.Message.Content.Remove(0, 1).ToLower().Split(' ');
-                    //Console.WriteLine("Your command=" + command);
-                    User account = await connector.FindUser(e.Author.Id);
-                    e.Message.DeleteAsync();
-                    switch (command[0])
-                    {
-                        case "профиль":
-                            //Console.WriteLine("Count users=" + e.Message.MentionedUsers.Count);
-                            if (e.Message.MentionedUsers.Count > 0)
-                            {
-                                DiscordUser user = e.Message.MentionedUsers.ElementAt(0);
-                                //Need create new variable, where find the user, and delete from GetProfilePretty()
-                                await e.Message.RespondAsync(embed: await GetProfilePretty(user)); // Get mentioned user
-                            }
-                            else
-                            {
-                                await e.Message.RespondAsync(embed: await GetProfilePretty(e.Author)); // Get his profile
-                            }
-                            break;
-                        case "бонус":
-                            if(account.DailyReward != Helper.getDailyTime())
-                            {
-                                await e.Message.RespondAsync(embed: new DiscordEmbedBuilder() { Title = "Вы успешно взяли свою ежедневную наградуs в 50 космикскоинов.", Color = DiscordColor.Green }.Build());
-                                await account.addMoney(50);
-                                await account.setDailyReward();
-                            }else
-                            {
-                                await e.Message.RespondAsync(embed: Helper.ErrorEmbed("Вы уже брали сегодня вознаграждение."));//Вы уже брали сегодня вознаграждение
-                            }
-                            break;
-                        case "передать":
-                            //Stopwatch sw = new Stopwatch();
-                            //sw.Start();
-                            if (e.Message.MentionedUsers.Count > 0)
-                            {
-                                if(command.Length >= 3)
-                                {
-                                    int money_transfer = 0;
-                                    Int32.TryParse(command[2], out money_transfer);
-                                    if (money_transfer > 0)
-                                    {
-                                        if(account.Money >= money_transfer)
-                                        {
-                                            DiscordUser transfered_to_user = e.Message.MentionedUsers.ElementAt(0);
-                                            User transfered_to_account = await connector.FindUser(transfered_to_user.Id);
-                                            await account.addMoney(-money_transfer);
-                                            await transfered_to_account.addMoney(money_transfer);
-                                            await e.Message.RespondAsync(embed: Helper.SuccessEmbed($"Успешно передано {money_transfer} космикскоинов пользователю {transfered_to_user.Username}#{transfered_to_user.Discriminator}"));
-                                        }
-                                        else
-                                        {
-                                            await e.Message.RespondAsync(embed: Helper.ErrorEmbed("У вас недостаточно средств."));
-                                        }
-                                    }else
-                                    {
-                                        await e.Message.RespondAsync(embed: Helper.ErrorEmbed("Сумма передачи должна быть больше нуля."));
-                                    }
-                                }else
-                                {
-                                    await e.Message.RespondAsync(embed: Helper.ErrorEmbed("Вы не указали сумму которую хотите передать."));
-                                }
-                            }else
-                            {
-                                await e.Message.RespondAsync(embed: Helper.ErrorEmbed("Вы не указали ссылку на пользователя которому хотите отправить деньги."));
-                            }
-                            //sw.Stop();
-                            //await e.Message.RespondAsync(embed: Helper.SuccessEmbed("Время выполнения команды передать: " + (sw.ElapsedMilliseconds/* / 100.0*/).ToString() + " мс."));
-                            break;
-                        case "дуэль":
-                            if (e.Message.MentionedUsers.Count > 0)
-                            {
-                                if (command.Length >= 3)
-                                {
-                                    int money_duel = 0;
-                                    Int32.TryParse(command[2], out money_duel);
-                                    if (money_duel > 0 && account.Money >= money_duel)
-                                    {
-                                        DiscordUser rival_to_user = e.Message.MentionedUsers.ElementAt(0);
-                                        User rival = await connector.FindUser(rival_to_user.Id);
-                                        if(rival.Money >= money_duel)
-                                        {
-                                            await account.addMoney(-money_duel);
-                                            random_duel.Add(new RandomGame(account, rival, money_duel, DateTime.Now));
-                                            await e.Message.RespondAsync(embed: Helper.SuccessEmbed($"Успешно отправлено приглашение на {money_duel} космикскоинов пользователю {rival_to_user.Username}#{rival_to_user.Discriminator}. Чтобы принять приглашение напишите !принять @{e.Author.Username}#{e.Author.Discriminator}"));
-                                            //NEED SEND MESSAGE
-                                        }else
-                                        {
-                                            await e.Message.RespondAsync(embed: Helper.ErrorEmbed($"У васшего соперника({rival_to_user.Username}#{rival_to_user.Discriminator}) недостаточно средств."));
-                                        }
-                                    }else
-                                    {
-                                        await e.Message.RespondAsync(embed: Helper.ErrorEmbed("Ставка меньше нуля либо у вас недостаточно средств."));
-                                    }
-                                }
-                                else
-                                {
-                                    await e.Message.RespondAsync(embed: Helper.ErrorEmbed("Вы не указали сумму дуэли."));
-                                }
-                            }
-                            else
-                            {
-                                await e.Message.RespondAsync(embed: Helper.ErrorEmbed("Вы не указали ссылку на пользователя которому хотите отправить заявку на дуэль."));
-                            }
-                            break;
-                        case "принять":
-                            if (e.Message.MentionedUsers.Count > 0)
-                            {
-                                bool has_game = false;
-                                int key_of_game = 0;
-                                DiscordUser rival_user = e.Message.MentionedUsers.ElementAt(0);
-                                User rival = await connector.FindUser(rival_user.Id);
-                                for (int i = 0; i < random_duel.Count; i++)
-                                {
-                                    if (random_duel[i].First == rival && random_duel[i].Second == account)
-                                    {
-                                        has_game = true;
-                                        key_of_game = i;
-                                        break;
-                                    }
-                                }
-                                if(has_game)
-                                {
-                                    RandomGame this_game = random_duel[key_of_game];
-                                    if(account.Money >= this_game.Bet)
-                                    {
-                                        await account.addMoney(-random_duel[key_of_game].Bet);
-                                        User winner = this_game.getWinner();
-                                        await winner.addMoney(this_game.Bet * 2);
-                                        DiscordMember member_winner = e.Guild.Members[winner.UserId];
-                                        await e.Message.RespondAsync(embed: Helper.SuccessEmbed($"Пользователь {member_winner.Username}#{member_winner.Discriminator} победил и получает {this_game.Bet} космикскоинов."));
-                                        random_duel.RemoveAt(key_of_game);
-                                    }else
-                                    {
-                                        await e.Message.RespondAsync(embed: Helper.ErrorEmbed("У вас недостаточно средств."));
-                                    }
-                                }else
-                                {
-                                    await e.Message.RespondAsync(embed: Helper.ErrorEmbed($"Пользователь {rival_user.Username}#{rival_user.Discriminator} не отправлял вам дуэль."));
-                                }
-                            }else
-                            {
-                                await e.Message.RespondAsync(embed: Helper.ErrorEmbed("Вы не указали ссылку на пользователя у которого хотите принять дуэль."));                            
-                            }
-                            break;
-                        case "топ":
-                            DiscordEmbedBuilder embed_of_top = new DiscordEmbedBuilder() { Color = (DiscordColor)13419374 };
-                            int number = 1;
-                            if (command.Length > 1)
-                            {
-                                int count = 5;
-                                if(command.Length > 2)
-                                {
-                                    Int32.TryParse(command[2], out count);
-                                    if(count > 30)
-                                    {
-                                        await e.Message.RespondAsync(embed: Helper.ErrorEmbed("Количество пользователей в топе не может превышать 30."));
-                                        break;
-                                    }
-                                }
-                                switch (command[1])
-                                {
-                                    case "онлайн":
-                                        embed_of_top.Title = "Топ " + count + " по онлайну в войсах: ";
-                                        await foreach (TopReturn top in connector.worker.getTopByDesc("voice_online", count))
-                                        {
-                                            embed_of_top.AddField("😱", $"{number}. <@{top.UserId}>: {top.Value} м.");
-                                            number++;
-                                        }
-                                        break;
-                                    default:
-                                        embed_of_top.Title = "Топ " + count + " по деньгам: ";
-                                        await foreach (TopReturn top in connector.worker.getTopByDesc("money", count))
-                                        {
-                                            embed_of_top.AddField("😱", $"{number}. <@{top.UserId}>: {top.Value}");
-                                            number++;
-                                        }
-                                        break;
-                                }
-                                await e.Message.RespondAsync(embed: embed_of_top.Build());
-                            }else
-                            {
-                                await e.Message.RespondAsync(embed: Helper.ErrorEmbed("Нужно указать тип топа"));
-                            }
-                            break;
-                        case "skick":
-                            if (e.Message.MentionedUsers.Count > 0)
-                            {
-                                DiscordUser need_kick_user = e.Message.MentionedUsers.ElementAt(0);
-                                int key = hasPrivateChannel(private_channels, e.Author);
-                                if (key != -1)
-                                {
-                                    var current_user_channel = ((DiscordMember)need_kick_user)?.VoiceState?.Channel;
-                                    if (current_user_channel != null && current_user_channel.Id == private_channels[key].channel.Id)
-                                    {
-                                        await ((DiscordMember)need_kick_user).ModifyAsync(delegate (MemberEditModel model) { model.VoiceChannel = null; }); // Kick user from channel
-                                        await current_user_channel.AddOverwriteAsync((DiscordMember)need_kick_user, (Permissions)0, Permissions.UseVoice);
-                                        await e.Message.RespondAsync(embed: Helper.SuccessEmbed("Success kicked."));
-                                    }
-                                    else
-                                    {
-                                        await e.Message.RespondAsync(embed: Helper.ErrorEmbed("Данный пользователь отсутсвует в вашем приват-канале."));
-                                    }
-                                }
-                                else
-                                {
-                                    await e.Message.RespondAsync(embed: Helper.ErrorEmbed("У вас отсутсвуют приват-каналы."));
-                                }
-                            }
-                            else
-                            {
-                                await e.Message.RespondAsync(embed: Helper.ErrorEmbed("Вы не указали ссылку на пользователя которого хотите кикнуть."));
-                            }
-                            break;
-                        case "report":
-                            string[] report_reason = e.Message.Content.Split(' ', 2);
-                            if(report_reason.Length > 1)
-                            {
-                                DiscordChannel to_report = e.Guild.GetChannel(669948353236303893); // NEED ADD REPORT CHANNEL IN JSON CONFIG
-                                e.Message.RespondAsync(embed: Helper.SuccessEmbed("Репорт успешно отправлен")); // MAYBE AWAIT?? IDK
-                                await to_report.SendMessageAsync(embed: new DiscordEmbedBuilder() { Title = $"Репорт от пользователя {e.Author.Username}#{e.Author.Discriminator}({e.Author.Id})", Color = DiscordColor.Yellow }.AddField("Текст репорта: ", report_reason[1]).Build());
-                            }else
-                            {
-                                await e.Message.RespondAsync(embed: Helper.ErrorEmbed("Отсутвует сообщение репорта."));
-                            }
-                            break;
-                    }
-                }
-            }
-        }
-
-        public static async Task<DiscordEmbed> GetProfilePretty(DiscordUser user)
-        {
-            User account = await connector.FindUser(user.Id);
-            DiscordEmbedBuilder builder = new DiscordEmbedBuilder()
-            {
-                Author = new EmbedAuthor() { Name = user.Username + "#" + user.Discriminator, Url = "https://discordapp.com", IconUrl = user.AvatarUrl },
-                Title = "Профиль:",
-                Color = DiscordColor.Blue
-            };
-            builder.AddField("Космикскоинов: " + account.Money, "На сервере: с " + ((DiscordMember)user).JoinedAt);
-            builder.AddField("Онлайн в войсах: " + account.getPrettyOnline(), "<:thinking:>");
-            return builder.Build();
+            if (e.Channel.Id == 693825578809425950 && !e.Author.IsBot)
+                await e.Message.DeleteAsync();
         }
     }
 }

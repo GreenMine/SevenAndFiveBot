@@ -17,16 +17,23 @@ namespace SevenAndFiveBot.AccoutSystem.Entities
     class MySqlWorker
     {
         private MySqlConnection connection;
-
-        public MySqlWorker(MySqlConnection connect)
+        public AccountConnector connector;
+        public MySqlWorker(MySqlConnection connect, AccountConnector conn)
         {
             this.connection = connect;
+            this.connector = conn;
         }
 
         public async Task<DataRow> GetUser(ulong user_id)
+                            => await sendRequest("SELECT id,user_id,money,voice_online,level,daily_reward,warn,plus_rep,minus_rep FROM `users` WHERE `user_id` = " + user_id);
+
+        public async Task<DataRow> GetReps(ulong user_id)
+                    => await sendRequest("SELECT id,user_id,plus_rep,minus_rep,list_plus_rep,list_minus_rep FROM `users` WHERE `user_id` = " + user_id);
+
+        private async Task<DataRow> sendRequest(string request)
         {
-            MySqlCommand request = new MySqlCommand("SELECT * FROM `users` WHERE `user_id` = " + user_id, connection);
-            DbDataReader reader = await request.ExecuteReaderAsync();
+            MySqlCommand mysql_request = new MySqlCommand(request, connection);
+            DbDataReader reader = await mysql_request.ExecuteReaderAsync();
             if (reader.HasRows)
             {
                 DataTable dt = new DataTable();
@@ -46,9 +53,9 @@ namespace SevenAndFiveBot.AccoutSystem.Entities
             return new User(this) { Id = id, UserId = user_id };
         }
         
-        public async Task UpdateValueAsync(ulong user_id, string field, object value)
+        public async Task UpdateValueAsync(ulong id, string field, object value)
         {
-            MySqlCommand request = new MySqlCommand("UPDATE `users` SET `" + field + "` = '" + value + "' WHERE `user_id` = " + user_id, connection);
+            MySqlCommand request = new MySqlCommand("UPDATE `users` SET `" + field + "` = '" + value + "' WHERE `id` = " + id, connection);
             await request.ExecuteNonQueryAsync();
         }
 

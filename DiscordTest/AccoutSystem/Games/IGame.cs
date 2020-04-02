@@ -11,6 +11,6 @@ namespace SevenAndFiveBot.AccoutSystem
     }
     interface IGame
     {
-        public User getWinner();
+        //public User getWinner();
     }
 }

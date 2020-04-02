@@ -5,6 +5,11 @@ using System.Text;
 
 namespace SevenAndFiveBot.Entities
 {
+    public class VoiceOnline
+    {
+        public DateTime start;
+        public DiscordUser user;
+    }
     class PrivateSystem
     {
         public struct PrivateChannel
@@ -12,6 +17,7 @@ namespace SevenAndFiveBot.Entities
             public DiscordChannel channel;
             public DiscordUser user;
         }
+
 
         public static int hasPrivateChannel(List<PrivateChannel> privateChannels, DiscordUser discordUser)
         {

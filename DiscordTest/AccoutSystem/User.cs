@@ -7,13 +7,13 @@ using SevenAndFiveBot.Entities;
 
 namespace SevenAndFiveBot.AccoutSystem
 {
-    
-    public class Warns
+
+    enum TypeOfRep
     {
-        public bool First { get; set; } = false;
-        public bool Second { get; set; } = false;
-        public bool Third { get; set; } = false;
+        Plus,
+        Minus
     }
+    
     class User
     {
 
@@ -23,7 +23,9 @@ namespace SevenAndFiveBot.AccoutSystem
         public uint VoiceOnline { get; set; } = 0;
         public uint Level { get; set; } = 0;
         public string DailyReward { get; set; } = "";
-        public Warns Warns { get; set; } = new Warns();
+        public short Warns { get; set; } = 0;
+        public uint PlusRep { get; set; } = 0;
+        public uint MinusRep { get; set; } = 0;
 
         private MySqlWorker worker;
         internal User(MySqlWorker work)
@@ -34,24 +36,55 @@ namespace SevenAndFiveBot.AccoutSystem
         public async Task addMoney(int count)
         {
             Money += count;
-            await worker.UpdateValueAsync(UserId, "money", Money);
+            await worker.UpdateValueAsync(Id, "money", Money);
         }
 
         public async Task setMoney(int count)
         {
             Money = count;
-            await worker.UpdateValueAsync(UserId, "money", Money);
+            await worker.UpdateValueAsync(Id, "money", Money);
+        }
+
+        public async Task addWarn()
+        {
+            Warns++;
+            await worker.UpdateValueAsync(Id, "warn", Warns);
+        }
+
+        public async Task unWarn()
+        {
+            Warns--;
+            await worker.UpdateValueAsync(Id, "warn", Warns);
         }
 
         public async Task addLevel()
         {
             Level++;
-            await worker.UpdateValueAsync(UserId, "level", Level);
+            await worker.UpdateValueAsync(Id, "level", Level);
+            worker.connector.InvokeLevel(this);
         }
 
+        public async Task addRep(TypeOfRep type)
+        {
+            if (type == TypeOfRep.Plus)
+            {
+                PlusRep++;
+                await worker.UpdateValueAsync(Id, "plus_rep", PlusRep);
+            }else
+            {
+                MinusRep++;
+                await worker.UpdateValueAsync(Id, "minus_rep", MinusRep);
+            }
+        }
+
+        public async Task addVoiceOnline(int count)
+        {
+            VoiceOnline += (uint)count;
+            await worker.UpdateValueAsync(Id, "voice_online", VoiceOnline);
+        }
         public async Task setDailyReward()
         {
-            await worker.UpdateValueAsync(UserId, "daily_reward", Helper.getDailyTime());
+            await worker.UpdateValueAsync(Id, "daily_reward", Helper.getDailyTime());
         }
 
         public string getPrettyOnline()
