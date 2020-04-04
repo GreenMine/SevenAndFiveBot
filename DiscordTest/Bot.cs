@@ -2,7 +2,6 @@
 using SevenAndFiveBot.Entities;
 using DSharpPlus;
 using DSharpPlus.Entities;
-using DSharpPlus.Net.Models;
 using MySql.Data.MySqlClient;
 using System;
 using System.Collections.Generic;
@@ -10,7 +9,6 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using static SevenAndFiveBot.Entities.PrivateSystem;
-using static DSharpPlus.Entities.DiscordEmbedBuilder;
 using SevenAndFiveBot.AccoutSystem.Games;
 using SevenAndFiveBot.AccoutSystem.Entities;
 using SevenAndFiveBot.AccoutSystem.Shop;
@@ -24,6 +22,7 @@ using SevenAndFiveBot.Commands.CShop;
 using DSharpPlus.CommandsNext.Exceptions;
 using SevenAndFiveBot.AccoutSystem.Games.Roulette;
 using SevenAndFiveBot.Exceptions.Command;
+using SevenAndFiveBot.Entities.TempRoles;
 
 namespace SevenAndFiveBot
 {
@@ -77,17 +76,16 @@ namespace SevenAndFiveBot
                 new Config().SaveToFile(path_to_config);
             _config = Config.LoadFromFile(path_to_config); // Load config
 
+            TempRoles tempRoles = new TempRoles("tempRole.json");
+            tempRoles.addTempRole(3912312381283127312, DateTime.Now);
+
+            Environment.Exit(5886);
+
             string connectionString = "server=localhost;user=root;database=sevenandfive;password=;";
             MySqlConnection connection = new MySqlConnection(connectionString);
             connector = new AccountConnector(connection);
             connector.LevelUpdate += Connector_LevelUpdate;
             connection.Open();
-
-            Reps reps = await connector.FindRep(144686801687281664);
-
-            Console.WriteLine(reps.hasUser(127));
-
-            Environment.Exit(1337);
 
             shop = new ShopWorker(connection);
 
@@ -121,18 +119,22 @@ namespace SevenAndFiveBot
             commands.CommandErrored += Commands_CommandErrored;
 
             commands.RegisterConverter(new TopConverter());
-            commands.RegisterConverter(new ShopConverter());
+            commands.RegisterUserFriendlyTypeName<TypeOfTop>("тип топа");
+
             commands.RegisterConverter(new RouletteGameConverter());
+            commands.RegisterUserFriendlyTypeName<TypeOfBet>("цвет");
 
             commands.RegisterCommands<UserCommands>();
             commands.RegisterCommands<TypicalCommands>();
             commands.RegisterCommands<ShopCommands>();
+            commands.RegisterCommands<AddItemGroup>();
             commands.RegisterCommands<AdminCommands>();
             commands.RegisterCommands<PrivateChannelCommands>();
             commands.RegisterCommands<DuelGameCommands>();
             commands.RegisterCommands<RouletteGameCommand>();
 
             commands.SetHelpFormatter<HelpFormatter>();
+
             await discord.ConnectAsync();
 
             CasinoWorker();

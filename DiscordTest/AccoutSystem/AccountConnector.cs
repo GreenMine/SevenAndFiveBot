@@ -53,7 +53,7 @@ namespace SevenAndFiveBot.AccoutSystem
 
         private Reps ToReps(DataRow table)
         {
-            return new Reps(this.worker) { PlusRep = (uint)table["plus_rep"], MinusRep = (uint)table["minus_rep"], ListPlusRep = StringToList(table["list_plus_rep"]), ListMinusRep = StringToList(table["list_minus_rep"]) };
+            return new Reps(this.worker) { Id = Convert.ToUInt64(table["id"]), PlusRep = (uint)table["plus_rep"], MinusRep = (uint)table["minus_rep"], ListPlusRep = StringToList(table["list_plus_rep"]), ListMinusRep = StringToList(table["list_minus_rep"]) };
         }
 
         public void InvokeLevel(User user)
@@ -64,7 +64,7 @@ namespace SevenAndFiveBot.AccoutSystem
         private List<uint> StringToList(object obj)
         {
             if (obj.ToString() == "")
-                return null;
+                return new List<uint>();
             return obj.ToString().Split(',').Select(xarg => UInt32.Parse(xarg)).ToList();
         }
 /*        public LevelOfWarns[] ToWarns(string warns)

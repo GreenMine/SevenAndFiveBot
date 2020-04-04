@@ -59,6 +59,12 @@ namespace SevenAndFiveBot.AccoutSystem.Entities
             await request.ExecuteNonQueryAsync();
         }
 
+        public async Task UpdateRepsAsync(ulong id, string field, string list, bool minus = false)
+        {
+            MySqlCommand request = new MySqlCommand("UPDATE `users` SET `list_" + field + "` = '" + list + "', `" + field + "` = `" + field + "` " + (minus ? "- 1" : "+ 1") + " WHERE `id` = " + id, connection);
+            await request.ExecuteNonQueryAsync();
+        }
+
         public async IAsyncEnumerable<TopReturn> getTopByDesc(string by, int count)
         {
             MySqlCommand request = new MySqlCommand("SELECT user_id, " + by + " FROM `users` ORDER BY `" + by + "` DESC LIMIT " + count, connection);

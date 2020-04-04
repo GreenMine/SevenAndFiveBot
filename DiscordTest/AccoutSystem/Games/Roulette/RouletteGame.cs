@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace SevenAndFiveBot.AccoutSystem.Games.Roulette
 {
-    enum TypeOfBet
+    public enum TypeOfBet
     {
         Red,
         Black,

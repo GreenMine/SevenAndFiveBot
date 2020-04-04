@@ -103,7 +103,7 @@ namespace SevenAndFiveBot.Commands.Help
             if (arguments.Count == 0)
                 this.Builder.AddField("Аргументы отсутсвуют", ":thinking::thinking::thinking:");
             else
-                this.Builder.AddField($"Аргументы команды:", string.Join('\n', arguments.Select(xarg => $"{xarg.Name} ({xarg.Type.Name}): {xarg.Description}({(xarg.IsOptional ? "Необязательный" : "Обазательный")})")));
+                this.Builder.AddField($"Аргументы команды:", string.Join('\n', arguments.Select(xarg => $"{xarg.Name} ({xarg.Name}): {xarg.Description}({(xarg.IsOptional ? "Необязательный" : "Обазательный")})")));
             return this;
         }
 

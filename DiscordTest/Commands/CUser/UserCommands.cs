@@ -126,8 +126,14 @@ namespace SevenAndFiveBot.Commands.CUser
         {
             if (ctx.User.Id == user.Id)
                 throw new InvalidOperationException("Охуел отправлять сам себе реп?");
-            User to_user = await Connector.FindUser(user.Id);
-            await to_user.addRep(type);
+            User current_user = await Connector.FindUser(ctx.User.Id);
+            Reps reps_user = await Connector.FindRep(user.Id);
+            TypeOfRep rep = reps_user.hasUser((uint)current_user.Id);
+            if (rep == type)
+                throw new InvalidOperationException("Вы уже отправляли реп данному пользователю");
+            if(rep != (TypeOfRep)(-1))
+                reps_user.deleteRep((uint)current_user.Id, rep);
+            reps_user.addRep((uint)current_user.Id, type);
             await ctx.RespondAsync(embed: Helper.SuccessEmbed("Успешно отправлен реп."));
         }
 

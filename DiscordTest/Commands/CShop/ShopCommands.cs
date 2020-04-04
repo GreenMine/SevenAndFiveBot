@@ -94,34 +94,6 @@ namespace SevenAndFiveBot.Commands.CShop
             }
         }
 
-        [Command("additem")]
-        [Description("Добавление предмета в магазин")]
-        [Hidden]
-        [RequirePermissions(Permissions.BanMembers)]
-        public async Task AddItem(CommandContext ctx, ItemType itemType, uint price, DiscordRole role = null)
-        {
-            switch (itemType)
-            {
-                case ItemType.Role:
-                    if (role == null)
-                        throw new InvalidOperationException("Не указана ссылка на роль которую вы хотите добавить в магазин.");
-                    await ShopWorker.addItem(new ShopItem() { Type = ItemType.Role, Price = price, Reward = role.Id.ToString() });
-                    await ctx.RespondAsync(embed: Helper.SuccessEmbed("Предмет успешно добавлен в магазин(id: " + ShopWorker.Items.Count + ")."));
-                    break;
-                case ItemType.Sign:
-                    await ShopWorker.addItem(new ShopItem() { Type = ItemType.Sign, Price = price });
-                    await ctx.RespondAsync(embed: Helper.SuccessEmbed("Предмет успешно добавлен в магазин(id: " + ShopWorker.Items.Count + ")."));
-                    break;
-                case ItemType.CustomRole:
-                    await ShopWorker.addItem(new ShopItem() { Type = ItemType.CustomRole, Price = price });
-                    await ctx.RespondAsync(embed: Helper.SuccessEmbed("Предмет успешно добавлен в магазин(id: " + ShopWorker.Items.Count + ")."));
-                    break;
-                default:
-                    await ctx.RespondAsync(embed: Helper.ErrorEmbed("Такой тип предмета не найден."));
-                    break;
-            }
-        }
-
         [Command("deleteitem")]
         [Description("Удаление предмета из магазина")]
         [Hidden]
@@ -132,6 +104,46 @@ namespace SevenAndFiveBot.Commands.CShop
                 throw new InvalidOperationException("ID был указан неверно.");
             await ShopWorker.deleteItem(item_id - 1);
             await ctx.RespondAsync(embed: Helper.SuccessEmbed("Предмет успешно удален."));
+        }
+
+    }
+
+    [Group("additem")]
+    [Description("Добавление предмета в магазин")]
+    [Hidden]
+    [RequirePermissions(Permissions.BanMembers)]
+    class AddItemGroup : BaseCommandModule
+    {
+
+        private ShopWorker ShopWorker;
+
+        public AddItemGroup(ShopWorker worker)
+        {
+            ShopWorker = worker;
+        }
+
+        [Command("role")]
+        [Description("Добавляем в мазагин роль")]
+        public async Task Role(CommandContext ctx, [Description("Цена")]uint price, [Description("@ на роль которую хотите добавить")]DiscordRole role)
+        {
+            await ShopWorker.addItem(new ShopItem() { Type = ItemType.Role, Price = price, Reward = role.Id.ToString() });
+            await ctx.RespondAsync(embed: Helper.SuccessEmbed("Предмет успешно добавлен в магазин(id: " + ShopWorker.Items.Count + ")."));
+        }
+
+        [Command("sign")]
+        [Description("Добавляем в мазагин роспись")]
+        public async Task Sign(CommandContext ctx, [Description("Цена")]uint price)
+        {
+            await ShopWorker.addItem(new ShopItem() { Type = ItemType.Sign, Price = price });
+            await ctx.RespondAsync(embed: Helper.SuccessEmbed("Предмет успешно добавлен в магазин(id: " + ShopWorker.Items.Count + ")."));
+        }
+
+        [Command("custom_role")]
+        [Description("Добавляем в мазагин кастомную роль")]
+        public async Task CustomRole(CommandContext ctx, [Description("Цена")]uint price, [Description("Время на сколько будет даваться роль(в минутах)")]string duration)
+        {
+            await ShopWorker.addItem(new ShopItem() { Type = ItemType.CustomRole, Price = price, Reward = duration });
+            await ctx.RespondAsync(embed: Helper.SuccessEmbed("Предмет успешно добавлен в магазин(id: " + ShopWorker.Items.Count + ")."));
         }
 
     }
