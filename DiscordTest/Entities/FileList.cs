@@ -19,24 +19,24 @@ namespace SevenAndFiveBot.Entities
             LoadFromFile();
         }
 
-        public void addTempRole(T data)
+        public void Add(T data)
         {
             MainList.Add(data);
-            saveToFile();
+            SaveToFile();
         }
 
-        public void deleteTempRole(T role)
+        public void Delete(T role)
         {
             MainList.Remove(role);
         }
 
-        public IEnumerable<T> getList()
+        public IEnumerable<T> GetList()
         {
             for (int i = MainList.Count - 1; i >= 0; i--)
                 yield return MainList[i];
         }
 
-        public void saveToFile()
+        public void SaveToFile()
         {
             File.WriteAllText(Filename, JsonConvert.SerializeObject(MainList));
         }

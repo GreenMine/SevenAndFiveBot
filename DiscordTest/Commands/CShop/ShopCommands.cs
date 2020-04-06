@@ -91,7 +91,7 @@ namespace SevenAndFiveBot.Commands.CShop
                     for (int i = 1; i < data.Length; i++)
                         name_of_role += data[i] + " ";
                     DiscordRole new_role = await ctx.Guild.CreateRoleAsync(name_of_role, color: Convert.ToInt32(data[0].Remove(0, 1), 16));
-                    Roles.addTempRole(new Roles(new_role.Id, DateTime.Now.AddMinutes(Double.Parse(current_item.Reward))));
+                    Roles.Add(new Roles(new_role.Id, DateTime.Now.AddMinutes(Double.Parse(current_item.Reward))));
                     ctx.RespondAsync(embed: Helper.SuccessEmbed("Предмет успешно куплен."));
                     await ((DiscordMember)ctx.User).GrantRoleAsync(new_role);
                     break;

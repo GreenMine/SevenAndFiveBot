@@ -45,6 +45,7 @@ namespace SevenAndFiveBot
         private static RouletteGame rouletteGame = new RouletteGame();
 
         private static FileList<Roles> tempRoles;
+        private static FileList<Mute> mute;
 
         private static Levels[] levels =
         {
@@ -81,6 +82,7 @@ namespace SevenAndFiveBot
             _config = Config.LoadFromFile(path_to_config); // Load config
 
             tempRoles = new FileList<Roles>("tempRoles.json");
+            mute = new FileList<Mute>("mute.json");
 
             string connectionString = "server=localhost;user=root;database=sevenandfive;password=;";
             MySqlConnection connection = new MySqlConnection(connectionString);
@@ -109,6 +111,7 @@ namespace SevenAndFiveBot
                                               .AddSingleton(rouletteGame)
                                               .AddSingleton(levels)
                                               .AddSingleton(tempRoles)
+                                              .AddSingleton(mute)
                                               .BuildServiceProvider();
 
 
@@ -145,7 +148,7 @@ namespace SevenAndFiveBot
             
             privateChecher();
 
-            tempRolesChecker();
+            tempRoleAndMuteChecker();
             
             await Task.Delay(-1);
         }
@@ -232,21 +235,28 @@ namespace SevenAndFiveBot
             }
         }
 
-        public static async void tempRolesChecker()
+        public static async void tempRoleAndMuteChecker()
         {
             await Task.Delay(10000);
             DiscordGuild currentGuild = discord.Guilds[_config.GuildId];
             while (true)
             {
-                foreach(Roles role in tempRoles.getList())
+                foreach(Roles role in tempRoles.GetList())
                 {
                     if(role.EndTime <= DateTime.Now)
                     {
                         await currentGuild.GetRole(role.RoleId).DeleteAsync();
-                        tempRoles.deleteTempRole(role);
+                        tempRoles.Delete(role);
                     }
                 }
-                tempRoles.saveToFile();
+                tempRoles.SaveToFile();
+
+                if(mute.MainList.Count != 0)
+                {
+                    Console.WriteLine("Hello buys and gurls:D");
+                    Console.WriteLine("bb boy buyt not a gurl");
+                }
+
                 await Task.Delay(60000);
             }
         }
