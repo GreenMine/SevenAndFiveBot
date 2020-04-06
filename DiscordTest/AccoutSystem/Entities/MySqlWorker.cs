@@ -48,7 +48,7 @@ namespace SevenAndFiveBot.AccoutSystem.Entities
         public async Task<User> CreateUser(ulong user_id)
         {
             DateTime now = DateTime.Now;
-            MySqlCommand request = new MySqlCommand("INSERT INTO `users` (`user_id`, `money`, `voice_online`, `level`, `daily_reward`, `warn`) VALUES ('" + user_id + "', '0', '0', '0', '" + Helper.getDailyTime() + "', '');SELECT LAST_INSERT_ID();", connection);
+            MySqlCommand request = new MySqlCommand("INSERT INTO `users` (`user_id`, `money`, `voice_online`, `level`, `daily_reward`, `warn`, `list_plus_rep`, `list_minus_rep`) VALUES ('" + user_id + "', '0', '0', '0', '" + Helper.getDailyTime() + "', '0', '', '');SELECT LAST_INSERT_ID();", connection);
             ulong id = (ulong)await request.ExecuteScalarAsync();
             return new User(this) { Id = id, UserId = user_id };
         }

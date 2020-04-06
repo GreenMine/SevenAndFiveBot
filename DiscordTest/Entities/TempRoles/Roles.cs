@@ -12,5 +12,11 @@ namespace SevenAndFiveBot.Entities.TempRoles
         [JsonProperty("end_time")]
         public DateTime EndTime;
 
+        public Roles(ulong roleId, DateTime endTime)
+        {
+            RoleId = roleId;
+            EndTime = endTime;
+        }
+
     }
 }

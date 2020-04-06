@@ -23,6 +23,8 @@ using DSharpPlus.CommandsNext.Exceptions;
 using SevenAndFiveBot.AccoutSystem.Games.Roulette;
 using SevenAndFiveBot.Exceptions.Command;
 using SevenAndFiveBot.Entities.TempRoles;
+using DSharpPlus.Interactivity;
+using DSharpPlus.Interactivity.Enums;
 
 namespace SevenAndFiveBot
 {
@@ -41,6 +43,8 @@ namespace SevenAndFiveBot
         private static List<RandomGame> random_duel = new List<RandomGame>();
         private static List<VoiceOnline> voiceOnlines = new List<VoiceOnline>();
         private static RouletteGame rouletteGame = new RouletteGame();
+
+        private static FileList<Roles> tempRoles;
 
         private static Levels[] levels =
         {
@@ -76,10 +80,7 @@ namespace SevenAndFiveBot
                 new Config().SaveToFile(path_to_config);
             _config = Config.LoadFromFile(path_to_config); // Load config
 
-            TempRoles tempRoles = new TempRoles("tempRole.json");
-            tempRoles.addTempRole(3912312381283127312, DateTime.Now);
-
-            Environment.Exit(5886);
+            tempRoles = new FileList<Roles>("tempRoles.json");
 
             string connectionString = "server=localhost;user=root;database=sevenandfive;password=;";
             MySqlConnection connection = new MySqlConnection(connectionString);
@@ -96,10 +97,10 @@ namespace SevenAndFiveBot
                 UseInternalLogHandler = true,
                 LogLevel = LogLevel.Debug
                 
-            }); ;
+            });
             //discord.MessageCreated += Discord_MessageCreated;
             discord.VoiceStateUpdated += Discord_VoiceStateUpdated;
-            discord.MessageCreated += Discord_MessageCreated;
+            //discord.MessageCreated += Discord_MessageCreated;
 
             var deps = new ServiceCollection()
                                               .AddSingleton(connector)
@@ -107,7 +108,9 @@ namespace SevenAndFiveBot
                                               .AddSingleton(private_channels)
                                               .AddSingleton(rouletteGame)
                                               .AddSingleton(levels)
+                                              .AddSingleton(tempRoles)
                                               .BuildServiceProvider();
+
 
             commands = discord.UseCommandsNext(new CommandsNextConfiguration
             {
@@ -137,9 +140,12 @@ namespace SevenAndFiveBot
 
             await discord.ConnectAsync();
 
+
             CasinoWorker();
             
             privateChecher();
+
+            tempRolesChecker();
             
             await Task.Delay(-1);
         }
@@ -192,7 +198,7 @@ namespace SevenAndFiveBot
         {
             await Task.Delay(10000);
             DiscordChannel casino_channel = discord.Guilds[_config.GuildId].GetChannel(693825578809425950);
-            while(true)
+            while (true)
             {
                 await rouletteGame.Start(casino_channel);
                 await rouletteGame.StartTimer();
@@ -223,6 +229,25 @@ namespace SevenAndFiveBot
                     }
                 }
                 await Task.Delay(10000);
+            }
+        }
+
+        public static async void tempRolesChecker()
+        {
+            await Task.Delay(10000);
+            DiscordGuild currentGuild = discord.Guilds[_config.GuildId];
+            while (true)
+            {
+                foreach(Roles role in tempRoles.getList())
+                {
+                    if(role.EndTime <= DateTime.Now)
+                    {
+                        await currentGuild.GetRole(role.RoleId).DeleteAsync();
+                        tempRoles.deleteTempRole(role);
+                    }
+                }
+                tempRoles.saveToFile();
+                await Task.Delay(60000);
             }
         }
 
@@ -291,7 +316,7 @@ namespace SevenAndFiveBot
         private static async Task Discord_MessageCreated(DSharpPlus.EventArgs.MessageCreateEventArgs e)
         {
             if (e.Channel.Id == 693825578809425950 && !e.Author.IsBot)
-                await e.Message.DeleteAsync();
+                e.Message.DeleteAsync();
         }
     }
 }

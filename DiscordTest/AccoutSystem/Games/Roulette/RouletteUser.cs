@@ -12,6 +12,8 @@ namespace SevenAndFiveBot.AccoutSystem.Games.Roulette
 
         public string Username;
 
+        //public uint CountBet;
+
         public uint Bet { get; set; }
 
     }

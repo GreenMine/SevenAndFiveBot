@@ -5,6 +5,7 @@ using DSharpPlus.Entities;
 using SevenAndFiveBot.AccoutSystem;
 using SevenAndFiveBot.AccoutSystem.Shop;
 using SevenAndFiveBot.Entities;
+using SevenAndFiveBot.Entities.TempRoles;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -15,12 +16,14 @@ namespace SevenAndFiveBot.Commands.CShop
     class ShopCommands : BaseCommandModule
     {
 
-        private AccountConnector Connector { get; set; }
-        private ShopWorker ShopWorker { get; set; }
-        public ShopCommands(AccountConnector connector, ShopWorker worker)
+        private AccountConnector Connector;
+        private ShopWorker ShopWorker;
+        private FileList<Roles> Roles;
+        public ShopCommands(AccountConnector connector, ShopWorker worker, FileList<Roles> roles)
         {
             Connector = connector;
             ShopWorker = worker;
+            Roles = roles;
         }
 
         [Command("shop")]
@@ -34,13 +37,13 @@ namespace SevenAndFiveBot.Commands.CShop
                 switch (shop_item.Type)
                 {
                     case ItemType.Role:
-                        shop_embed.AddField($"{i + 1}. {shop_item.Price}:dollar:", $"Роль: <@&{shop_item.Reward}>", true);
+                        shop_embed.AddField($"{i + 1}. {shop_item.Price}:dollar:", $"Роль: <@&{shop_item.Reward}> ", true);
                         break;
                     case ItemType.Sign:
                         shop_embed.AddField($"{i + 1}. {shop_item.Price}:dollar:", "Роспись от космикса", true);
                         break;
                     case ItemType.CustomRole:
-                        shop_embed.AddField($"{i + 1}. {shop_item.Price}:dollar:", "Пользовательская роль", true);
+                        shop_embed.AddField($"{i + 1}. {shop_item.Price}:dollar:", "Пользовательская роль на " + shop_item.Reward + "м.", true);
                         break;
                 }
             }
@@ -88,8 +91,9 @@ namespace SevenAndFiveBot.Commands.CShop
                     for (int i = 1; i < data.Length; i++)
                         name_of_role += data[i] + " ";
                     DiscordRole new_role = await ctx.Guild.CreateRoleAsync(name_of_role, color: Convert.ToInt32(data[0].Remove(0, 1), 16));
+                    Roles.addTempRole(new Roles(new_role.Id, DateTime.Now.AddMinutes(Double.Parse(current_item.Reward))));
+                    ctx.RespondAsync(embed: Helper.SuccessEmbed("Предмет успешно куплен."));
                     await ((DiscordMember)ctx.User).GrantRoleAsync(new_role);
-                    await ctx.RespondAsync(embed: Helper.SuccessEmbed("Предмет успешно куплен."));
                     break;
             }
         }
