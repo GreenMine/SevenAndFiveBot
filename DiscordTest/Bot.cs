@@ -102,7 +102,7 @@ namespace SevenAndFiveBot
             });
             //discord.MessageCreated += Discord_MessageCreated;
             discord.VoiceStateUpdated += Discord_VoiceStateUpdated;
-            //discord.MessageCreated += Discord_MessageCreated;
+            discord.GuildMemberAdded += Discord_GuildMemberAdded;
 
             var deps = new ServiceCollection()
                                               .AddSingleton(connector)
@@ -148,11 +148,12 @@ namespace SevenAndFiveBot
             
             privateChecher();
 
-            tempRoleAndMuteChecker();
+            checkerThread();
             
             await Task.Delay(-1);
         }
-        
+
+
         private static async Task Commands_CommandErrored(CommandErrorEventArgs e)
         {
             if (e.Exception is System.ArgumentException)
@@ -235,10 +236,13 @@ namespace SevenAndFiveBot
             }
         }
 
-        public static async void tempRoleAndMuteChecker()
+        public static async void checkerThread()
         {
             await Task.Delay(10000);
             DiscordGuild currentGuild = discord.Guilds[_config.GuildId];
+
+            DiscordRole muteRole = currentGuild.GetRole(696670385617371186);
+
             while (true)
             {
                 foreach(Roles role in tempRoles.GetList())
@@ -251,11 +255,17 @@ namespace SevenAndFiveBot
                 }
                 tempRoles.SaveToFile();
 
-                if(mute.MainList.Count != 0)
+                foreach(Mute muted in mute.GetList())
                 {
-                    Console.WriteLine("Hello buys and gurls:D");
-                    Console.WriteLine("bb boy buyt not a gurl");
+                    if(muted.EndTime <= DateTime.Now)
+                    {
+                        DiscordMember need_unmuted = currentGuild.Members[muted.UserId];
+                        mute.Delete(muted);
+                        need_unmuted.RevokeRoleAsync(muteRole);
+                        await need_unmuted.SendMessageAsync(embed: new DiscordEmbedBuilder() { Title = "<:seven_unmute:696300818231459851>Ограничение активности снято.", Description = "Пиздите на здоровье:smiling_imp:", Color = (DiscordColor)65314 }.WithFooter("ARMY Family", "https://sun9-31.userapi.com/c848528/v848528033/147aa6/Xk0MsOtkIDg.jpg"));
+                    }
                 }
+                mute.SaveToFile();
 
                 await Task.Delay(60000);
             }
@@ -319,7 +329,7 @@ namespace SevenAndFiveBot
 
                     }
                 }
-                Console.WriteLine(e.User.Username + " connected to " + e.Channel.Name);
+                //Console.WriteLine(e.User.Username + " connected to " + e.Channel.Name);
             }
         }
 
@@ -327,6 +337,22 @@ namespace SevenAndFiveBot
         {
             if (e.Channel.Id == 693825578809425950 && !e.Author.IsBot)
                 e.Message.DeleteAsync();
+        }
+
+        private static async Task Discord_GuildMemberAdded(DSharpPlus.EventArgs.GuildMemberAddEventArgs e)
+        {
+            User account = await connector.FindUser(e.Member.Id);
+
+            if(account.Warns > 0)
+            {
+
+                // DO SOMETHING
+            }
+
+            if(account.Level > 0)
+            {
+                // DO SOMETHING
+            }
         }
     }
 }
