@@ -52,8 +52,8 @@ namespace SevenAndFiveBot.Commands
         [Description("Замутить пользователя.")]
         public async Task Mute(CommandContext ctx, DiscordMember member, uint mute_time, string reason)
         {
-            member.GrantRoleAsync(ctx.Guild.GetRole(696670385617371186), "Muted by " + ctx.User.Username + "#" + ctx.User.Discriminator);
             await ctx.RespondAsync(embed: Helper.SuccessEmbed("Успеншо замучен!)"));
+            member.GrantRoleAsync(ctx.Guild.GetRole(696670385617371186), "Muted by " + ctx.User.Username + "#" + ctx.User.Discriminator);
             await member.SendMessageAsync(embed: new DiscordEmbedBuilder() { Title = "<:seven_mute:696300100758274099>Ограничение активности", Description = $"**Причина:**⠀[{reason}] \n**Выдал:** {ctx.User.Username}#{ctx.User.Discriminator}\n**В течение:**⠀{mute_time}м.", Color = (DiscordColor)16720418 }.WithFooter("ARMY Family","https://sun9-31.userapi.com/c848528/v848528033/147aa6/Xk0MsOtkIDg.jpg"));
             mute.Add(new Mute(member.Id, DateTime.Now.AddMinutes(mute_time)));
         }

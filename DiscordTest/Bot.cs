@@ -23,8 +23,6 @@ using DSharpPlus.CommandsNext.Exceptions;
 using SevenAndFiveBot.AccoutSystem.Games.Roulette;
 using SevenAndFiveBot.Exceptions.Command;
 using SevenAndFiveBot.Entities.TempRoles;
-using DSharpPlus.Interactivity;
-using DSharpPlus.Interactivity.Enums;
 
 namespace SevenAndFiveBot
 {
@@ -76,7 +74,6 @@ namespace SevenAndFiveBot
         @Space – 75000 минут.*/
         internal static async Task MainTask(string[] args)
         {
-
             if (!File.Exists(path_to_config))
                 new Config().SaveToFile(path_to_config);
             _config = Config.LoadFromFile(path_to_config); // Load config
@@ -120,7 +117,6 @@ namespace SevenAndFiveBot
                 StringPrefixes = new[] { "!" },
                 Services = deps
             });
-
 
             commands.CommandErrored += Commands_CommandErrored;
 
@@ -228,8 +224,11 @@ namespace SevenAndFiveBot
                     DiscordChannel channel = private_channels[i].channel;
                     if (channel.Users.Count() <= 0)
                     {
-                        await channel.DeleteAsync();
-                        private_channels.Remove(private_channels[i]);
+                        try
+                        {
+                            await channel.DeleteAsync();
+                            private_channels.Remove(private_channels[i]);
+                        }catch(Exception e){}
                     }
                 }
                 await Task.Delay(10000);
@@ -273,6 +272,7 @@ namespace SevenAndFiveBot
 
         private static async Task Discord_VoiceStateUpdated(DSharpPlus.EventArgs.VoiceStateUpdateEventArgs e)
         {
+            Console.WriteLine(e.User.Username + " connected to " + e?.Channel?.Name);
             bool has_in_voice_online = false;
             VoiceOnline this_channel_user = null;
             foreach (VoiceOnline online in voiceOnlines)
@@ -329,7 +329,6 @@ namespace SevenAndFiveBot
 
                     }
                 }
-                //Console.WriteLine(e.User.Username + " connected to " + e.Channel.Name);
             }
         }
 

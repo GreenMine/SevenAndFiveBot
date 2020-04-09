@@ -1,8 +1,5 @@
 ﻿//using MySql.Data.MySqlClient;
 //using SevenAndFiveBot.AccoutSystem.Shop;
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace SevenAndFiveBot
 {
@@ -42,7 +39,7 @@ namespace SevenAndFiveBot
             } 
             connection.Close();*/
 
-        Bot.MainTask(args).ConfigureAwait(false).GetAwaiter().GetResult();
+            Bot.MainTask(args).ConfigureAwait(false).GetAwaiter().GetResult();
         }
         /*        static async void doAsync(AccoutConnector connector)
                 {
