@@ -1,0 +1,25 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
+  <metadata>
+    <id>DSharpPlus.Interactivity</id>
+    <version>4.0.0-nightly-00711</version>
+    <authors>Naamloos, afroraydude, DrCreo, Death, TiaqoY0, Axiom, Emzi0767, DSharpPlus contributors</authors>
+    <owners>Naamloos, afroraydude, DrCreo, Death, TiaqoY0, Axiom, Emzi0767, DSharpPlus contributors</owners>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <licenseUrl>https://github.com/DSharpPlus/DSharpPlus/blob/master/LICENSE</licenseUrl>
+    <projectUrl>https://github.com/DSharpPlus/DSharpPlus</projectUrl>
+    <iconUrl>https://raw.githubusercontent.com/DSharpPlus/DSharpPlus/master/logo/dsharpplus.png</iconUrl>
+    <description>An addon that adds interactivity capabilities to commands.</description>
+    <tags>discord, discord-api, bots, discord-bots, chat, dsharp, dsharpplus, csharp, dotnet, vb-net, fsharp, interactive, pagination, reactions</tags>
+    <repository type="Git" url="https://github.com/DSharpPlus/DSharpPlus" />
+    <dependencies>
+      <group targetFramework=".NETStandard1.3">
+        <dependency id="DSharpPlus" version="4.0.0-nightly-00711" exclude="Build,Analyzers" />
+        <dependency id="NETStandard.Library" version="1.6.1" exclude="Build,Analyzers" />
+      </group>
+      <group targetFramework=".NETStandard2.0">
+        <dependency id="DSharpPlus" version="4.0.0-nightly-00711" exclude="Build,Analyzers" />
+      </group>
+    </dependencies>
+  </metadata>
+</package>
