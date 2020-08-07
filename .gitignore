@@ -3,6 +3,11 @@
 ##
 ## Get latest from https://github.com/github/gitignore/blob/master/VisualStudio.gitignore
 
+DiscordTest/config.json
+DiscordTest/config-backup.json
+DiscordTest/mute.json
+DiscordTest/tempRoles.json
+
 # User-specific files
 *.rsuser
 *.suo

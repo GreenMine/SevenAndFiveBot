@@ -33,7 +33,7 @@ namespace SevenAndFiveBot.Commands
         public async Task Info(CommandContext ctx)
         {
             var upt = new DateTime((DateTime.Now - Process.GetCurrentProcess().StartTime).Ticks).ToString("ddд. HH:mm:ss");
-            DiscordEmbedBuilder builder = new DiscordEmbedBuilder { Color = (DiscordColor)4020122, ThumbnailUrl = ctx.Client.CurrentUser.AvatarUrl, Title = "Информация о боте", Description = "По вопросам: <@144686801687281664>/[VK](https://vk.com/ilya_ageyev)" }.AddField(":timer:Uptime: " + upt, ":ping_pong: Ping: " + ctx.Client.Ping + "мс.");
+            DiscordEmbedBuilder builder = new DiscordEmbedBuilder { Color = (DiscordColor)4020122, Title = "Информация о боте", Description = "По вопросам: <@144686801687281664>/[VK](https://vk.com/ilya_ageyev)" }.AddField(":timer:Uptime: " + upt, ":ping_pong: Ping: " + ctx.Client.Ping + "мс.");
             await ctx.RespondAsync(embed: builder.Build());
         }
 
