@@ -147,8 +147,8 @@ namespace SevenAndFiveBot
             privateChecher();
 
             checkerThread();
-            
-            await Task.Delay(-1);
+
+			await Task.Delay(-1);
         }
 
 
