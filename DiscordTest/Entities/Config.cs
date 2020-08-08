@@ -8,8 +8,6 @@ namespace SevenAndFiveBot.Entities
 {
     internal class Config
     {
-        [JsonProperty("token")]
-        internal string Token = "token here";
 
         [JsonProperty("guild_id")]
         internal ulong GuildId = 0;

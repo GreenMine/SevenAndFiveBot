@@ -95,7 +95,7 @@ namespace SevenAndFiveBot
 
             discord = new DiscordClient(new DiscordConfiguration
             {
-                Token = _config.Token,
+                Token = Environment.GetEnvironmentVariable("SAF_DS_T"),
                 TokenType = TokenType.Bot,
                 UseInternalLogHandler = true,
                 LogLevel = LogLevel.Debug
