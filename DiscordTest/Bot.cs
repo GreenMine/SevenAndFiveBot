@@ -81,9 +81,12 @@ namespace SevenAndFiveBot
             tempRoles = new FileList<Roles>("tempRoles.json");
             mute = new FileList<Mute>("mute.json");
 
-			//mysql://bdbec8bf261377:4d06e369@eu-cdbr-west-03.cleardb.net/heroku_2251c7932429166?reconnect=true
-            string connectionString = "server=eu-cdbr-west-03.cleardb.netuser=bdbec8bf261377;password=4d06e369;database=heroku_2251c7932429166";
-            MySqlConnection connection = new MySqlConnection(connectionString);
+			MySqlConnectionStringBuilder connBuilder = new MySqlConnectionStringBuilder();
+			connBuilder.Server = System.Net.Dns.GetHostEntry("eu-cdbr-west-03.cleardb.net").AddressList[0].ToString();
+			connBuilder.UserID = "bdbec8bf261377";
+			connBuilder.Password = "4d06e369";
+			connBuilder.Database = "heroku_2251c7932429166";
+            MySqlConnection connection = new MySqlConnection(connBuilder.ToString());
             connector = new AccountConnector(connection);
             connector.LevelUpdate += Connector_LevelUpdate;
             connection.Open();
