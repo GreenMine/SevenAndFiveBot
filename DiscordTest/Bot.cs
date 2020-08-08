@@ -44,7 +44,7 @@ namespace SevenAndFiveBot
 
         private static FileList<Roles> tempRoles;
         private static FileList<Mute> mute;
-
+		
         private static Levels[] levels =
         {
             new Levels() {CountMinutes = 10, RoleId = 693078664996192337, Name = "Asteroid"},
@@ -180,7 +180,7 @@ namespace SevenAndFiveBot
             {
                 await e.Context.RespondAsync(embed: new DiscordEmbedBuilder() { Color = DiscordColor.Red, Title = "Ошибка: Недостаточно прав!" }.Build());
             }else if(e.Exception is CommandNotFoundException) {}
-            else 
+            else
             {
                 await e.Context.RespondAsync(embed: new DiscordEmbedBuilder() { Color = DiscordColor.Red, Title = "Ошибка" }.AddField("Текст ошибки:", $"{e.Exception.GetType()}: {e.Exception.Message ?? "<no message>"}").Build());
             }
@@ -193,13 +193,13 @@ namespace SevenAndFiveBot
             DiscordMember member = guild.Members[user.UserId];
             DiscordRole give_role = guild.GetRole(levels[user.Level-1].RoleId);
             await member.GrantRoleAsync(give_role, "Level UP blyat'!");
-            await member.SendMessageAsync($"**Поздравляем!** __Вы достигли уровня \"{give_role.Name}\", ваш онлайн составляет {user.VoiceOnline} минут!__");  
+            await member.SendMessageAsync($"**Поздравляем!** __Вы достигли уровня \"{give_role.Name}\", ваш онлайн составляет {user.VoiceOnline} минут!__");
         }
 
         public static async void CasinoWorker()
         {
             await Task.Delay(10000);
-            DiscordChannel casino_channel = discord.Guilds[_config.GuildId].GetChannel(693825578809425950);
+            DiscordChannel casino_channel = discord.Guilds[_config.GuildId].GetChannel(_config.CasinoId);
             while (true)
             {
                 await rouletteGame.Start(casino_channel);
@@ -336,7 +336,7 @@ namespace SevenAndFiveBot
 
         private static async Task Discord_MessageCreated(DSharpPlus.EventArgs.MessageCreateEventArgs e)
         {
-            if (e.Channel.Id == 693825578809425950 && !e.Author.IsBot)
+            if (e.Channel.Id == _config.CasinoId && !e.Author.IsBot)
                 e.Message.DeleteAsync();
         }
 
@@ -346,7 +346,6 @@ namespace SevenAndFiveBot
 
             if(account.Warns > 0)
             {
-
                 // DO SOMETHING
             }
 

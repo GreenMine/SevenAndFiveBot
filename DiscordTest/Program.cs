@@ -39,7 +39,7 @@ namespace SevenAndFiveBot
             }
             connection.Close();*/
 
-			Bot.MainTask().GetAwaiter().GetResult();
+			Bot.MainTask().ConfigureAwait(false).GetAwaiter().GetResult();
         }
         /*        static async void doAsync(AccoutConnector connector)
                 {
