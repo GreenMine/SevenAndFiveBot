@@ -10,13 +10,13 @@ namespace SevenAndFiveBot.Entities
     {
 
         [JsonProperty("guild_id")]
-        internal ulong GuildId = 0;
+        internal ulong GuildId = 145522741481701376;
 
         [JsonProperty("private_id")]
-        internal ulong PrivateId = 0;
+        internal ulong PrivateId = 622753007871852596;
 
         [JsonProperty("private_category_id")]
-        internal ulong PrivateCategoryId = 0;
+        internal ulong PrivateCategoryId = 622752938867163138;
 
         public static Config LoadFromFile(string path)
         {
