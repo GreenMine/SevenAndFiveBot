@@ -36,7 +36,7 @@ namespace SevenAndFiveBot
             foreach (ShopItem shop_item in shop.Items)
             {
                 Console.WriteLine(shop_item.Price + " " + shop_item.Type + " " + shop_item.Reward);
-            } 
+            }
             connection.Close();*/
 
             Bot.MainTask(args).ConfigureAwait(false).GetAwaiter().GetResult();

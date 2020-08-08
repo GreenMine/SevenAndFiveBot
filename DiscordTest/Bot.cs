@@ -81,7 +81,8 @@ namespace SevenAndFiveBot
             tempRoles = new FileList<Roles>("tempRoles.json");
             mute = new FileList<Mute>("mute.json");
 
-            string connectionString = "server=localhost;user=root;database=sevenandfive;password=;";
+			//mysql://bdbec8bf261377:4d06e369@eu-cdbr-west-03.cleardb.net/heroku_2251c7932429166?reconnect=true
+            string connectionString = "server=eu-cdbr-west-03.cleardb.netuser=bdbec8bf261377;password=4d06e369;database=heroku_2251c7932429166";
             MySqlConnection connection = new MySqlConnection(connectionString);
             connector = new AccountConnector(connection);
             connector.LevelUpdate += Connector_LevelUpdate;
