@@ -72,7 +72,7 @@ namespace SevenAndFiveBot
         @Mercury – 45000 минут.
         @Sun – 60000 минут.
         @Space – 75000 минут.*/
-        internal static async Task MainTask(string[] args)
+        internal static async Task MainTask()
         {
             _config = new Config(); // Load config
 
