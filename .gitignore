@@ -3,9 +3,13 @@
 ##
 ## Get latest from https://github.com/github/gitignore/blob/master/VisualStudio.gitignore
 
+# CFG
 DiscordTest/config-backup.json
 DiscordTest/mute.json
 DiscordTest/tempRoles.json
+
+# ENV
+env.sh
 
 # Build results
 [Dd]ebug/

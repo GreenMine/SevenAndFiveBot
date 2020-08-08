@@ -74,9 +74,7 @@ namespace SevenAndFiveBot
         @Space – 75000 минут.*/
         internal static async Task MainTask(string[] args)
         {
-            if (!File.Exists(path_to_config))
-                new Config().SaveToFile(path_to_config);
-            _config = Config.LoadFromFile(path_to_config); // Load config
+            _config = new Config(); // Load config
 
             tempRoles = new FileList<Roles>("tempRoles.json");
             mute = new FileList<Mute>("mute.json");
@@ -95,7 +93,7 @@ namespace SevenAndFiveBot
 
             discord = new DiscordClient(new DiscordConfiguration
             {
-                Token = Environment.GetEnvironmentVariable("SAF_DS_T"),
+                Token = _config.Token,
                 TokenType = TokenType.Bot,
                 UseInternalLogHandler = true,
                 LogLevel = LogLevel.Debug
