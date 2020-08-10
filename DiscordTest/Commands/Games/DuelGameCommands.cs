@@ -28,10 +28,10 @@ namespace SevenAndFiveBot.Commands.Games
         [Description("Отправить заявку на дуэль")]
         public async Task Duel(CommandContext ctx, [Description("@ на пользователя которому хотите отправить дуэль")] DiscordUser rival_to_user, [Description("Сумму на которую хотите сыграть дуэль")] int money_duel)
         {
-            User account = await Connector.FindUser(ctx.User.Id);
+            User account = Connector.FindUser(ctx.User.Id);
             if (money_duel <= 0 || account.Money < money_duel)
                 throw new InvalidOperationException("Ставка меньше нуля либо у вас недостаточно средств.");
-            User rival = await Connector.FindUser(rival_to_user.Id);
+            User rival = Connector.FindUser(rival_to_user.Id);
             if (rival.Money < money_duel)
                 throw new InvalidOperationException($"У васшего соперника({rival_to_user.Username}#{rival_to_user.Discriminator}) недостаточно средств.");
             await account.addMoney(-money_duel);
@@ -46,8 +46,8 @@ namespace SevenAndFiveBot.Commands.Games
         {
             bool has_game = false;
             int key_of_game = 0;
-            User account = await Connector.FindUser(ctx.User.Id);
-            User rival = await Connector.FindUser(rival_user.Id);
+            User account = Connector.FindUser(ctx.User.Id);
+            User rival = Connector.FindUser(rival_user.Id);
             for (int i = 0; i < randomDuel.Count; i++)
             {
                 if (randomDuel[i].First == rival && randomDuel[i].Second == account)

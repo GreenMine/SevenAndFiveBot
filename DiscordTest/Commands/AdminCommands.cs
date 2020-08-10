@@ -62,7 +62,7 @@ namespace SevenAndFiveBot.Commands
         [Description("Добавить варн пользователю")]
         public async Task Warn(CommandContext ctx, [Description("User to warn")] DiscordMember member, [Description("Причина")]string reason)
         {
-            User warn_user = await Connector.FindUser(member.Id);
+            User warn_user = Connector.FindUser(member.Id);
             if (warn_user.Warns == 3)
                 throw new InvalidOperationException("У пользователя максимальное количество репортов!");
             await warn_user.addWarn();
@@ -76,7 +76,7 @@ namespace SevenAndFiveBot.Commands
         [Description("Удалить варн пользователю")]
         public async Task Unwarn(CommandContext ctx, [Description("User to warn")] DiscordMember member)
         {
-            User warn_user = await Connector.FindUser(member.Id);
+            User warn_user = Connector.FindUser(member.Id);
             if (warn_user.Warns == 0)
                 throw new InvalidOperationException("У пользователя нет варнов!");
             member.RevokeRoleAsync(ctx.Guild.Roles[warnRoles[warn_user.Warns - 1]], $"unwarn by {ctx.User.Username}#{ctx.User.Discriminator}!!!");

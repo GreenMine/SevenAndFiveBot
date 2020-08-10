@@ -4,6 +4,7 @@ using System.Data.Common;
 using System.Text;
 using System.Threading.Tasks;
 using SevenAndFiveBot.AccoutSystem.Entities;
+using SevenAndFiveBot.Entities;
 using MySql.Data.MySqlClient;
 using static SevenAndFiveBot.AccoutSystem.User;
 using System.Linq;
@@ -14,6 +15,7 @@ namespace SevenAndFiveBot.AccoutSystem
     class AccountConnector
     {
         internal MySqlWorker worker;
+		private CircleBuffer<User> users = new CircleBuffer<User>(new User(null));
 
         public event Action<User> LevelUpdate;
         public AccountConnector(MySqlConnection conn)
@@ -21,8 +23,17 @@ namespace SevenAndFiveBot.AccoutSystem
             this.worker = new MySqlWorker(conn, this);
         }
 
-        public async Task<User> FindUser(ulong user_id)
+        public ref User FindUser(ulong user_id)
         {
+			int found_user = users.Get(user => user.UserId == user_id);
+			if(found_user == -1) {
+				found_user = users.Add(FindUserFromDB(user_id).Result);
+			}
+			return ref users.buffer[found_user];
+        }
+
+		public async Task<User> FindUserFromDB(ulong user_id)
+		{
             User user;
             //return ToUser(await GetUser(user_id));
             DataRow user_row = await worker.GetUser(user_id);
@@ -32,7 +43,7 @@ namespace SevenAndFiveBot.AccoutSystem
             else
                 user = ToUser(user_row);
             return user;
-        }
+		}
 
         public async Task<Reps> FindRep(ulong user_id)
         {

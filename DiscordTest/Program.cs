@@ -1,12 +1,28 @@
 ﻿//using MySql.Data.MySqlClient;
 //using SevenAndFiveBot.AccoutSystem.Shop;
 
+using System;
+using SevenAndFiveBot.Entities;
+
 namespace SevenAndFiveBot
 {
     class Program
     {
         static void Main(string[] args)
         {
+//			CircleBuffer<int> buffer = new CircleBuffer<int>();
+//			buffer.Add(0);
+//			buffer.Add(55);
+//			buffer.Add(43);
+//			buffer.Add(72);
+//			bool is_found;
+//			uint found_value = buffer.Get(v => v != 0, out is_found);
+//			if(is_found) {
+//				Console.WriteLine("Found value: " + buffer.buffer[found_value]);
+//			} else {
+//				Console.WriteLine("Value not found");
+//			}
+//			Environment.Exit(0);
             /*connection.Open();
             if (connection.State == ConnectionState.Open)
             {

@@ -32,11 +32,11 @@ namespace SevenAndFiveBot.Commands.Games
                 throw new SendMessageException("Сейчас нет доступных игр.", ctx.User);
             if (bet < 50)
                 throw new SendMessageException("Ставка должна быть больше 50.", ctx.User);
-            User account = await Connector.FindUser(ctx.User.Id);
+            User account = Connector.FindUser(ctx.User.Id);
             if (account.Money < bet)
                 throw new SendMessageException("Недостаточно средств!", ctx.User);
             await account.addMoney(-(int)bet);
-            Game.addBet(await Connector.FindUser(ctx.User.Id), ctx.User.Username + "#" + ctx.User.Discriminator, typeBet, bet);
+            Game.addBet(Connector.FindUser(ctx.User.Id), ctx.User.Username + "#" + ctx.User.Discriminator, typeBet, bet);
             await ((DiscordMember)ctx.User).SendMessageAsync(embed: Helper.SuccessEmbed("Ставка успешно принята"));
         }
 

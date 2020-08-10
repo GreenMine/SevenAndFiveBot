@@ -32,6 +32,7 @@ namespace SevenAndFiveBot.AccoutSystem.Entities
 
         private async Task<DataRow> sendRequest(string request)
         {
+			Console.WriteLine("Request:\t" + request);
             MySqlCommand mysql_request = new MySqlCommand(request, connection);
             DbDataReader reader = await mysql_request.ExecuteReaderAsync();
             if (reader.HasRows)

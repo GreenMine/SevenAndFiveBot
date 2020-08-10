@@ -91,6 +91,8 @@ namespace SevenAndFiveBot
 
             shop = new ShopWorker(connection);
 
+			User u = connector.FindUser(144686801687281664);
+
             discord = new DiscordClient(new DiscordConfiguration
             {
                 Token = _config.Token,
@@ -116,7 +118,7 @@ namespace SevenAndFiveBot
 
             commands = discord.UseCommandsNext(new CommandsNextConfiguration
             {
-                StringPrefixes = new[] { "!" },
+                StringPrefixes = new[] { "!", "7.5" },
                 Services = deps
             });
 
@@ -290,7 +292,7 @@ namespace SevenAndFiveBot
             {
                 if(e.Channel == null)// || e.Before != e.After
                 {
-                    User account = await connector.FindUser(e.User.Id);
+                    User account = connector.FindUser(e.User.Id);
                     voiceOnlines.Remove(this_channel_user);
                     TimeSpan count_seconds = DateTime.Now - this_channel_user.start;
                     int minutes_in_voice_chat = (int)(count_seconds.TotalSeconds / 60);
@@ -342,7 +344,7 @@ namespace SevenAndFiveBot
 
         private static async Task Discord_GuildMemberAdded(DSharpPlus.EventArgs.GuildMemberAddEventArgs e)
         {
-            User account = await connector.FindUser(e.Member.Id);
+            User account = connector.FindUser(e.Member.Id);
 
             if(account.Warns > 0)
             {

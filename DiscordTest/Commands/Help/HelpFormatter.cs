@@ -31,8 +31,8 @@ namespace SevenAndFiveBot.Commands.Help
             return this;
         }
 
-        // this method is called second, it sets the current command's 
-        // description. if no command is currently being processed, it 
+        // this method is called second, it sets the current command's
+        // description. if no command is currently being processed, it
         // won't be called
         public BaseHelpFormatter WithDescription(string description)
         {
@@ -43,8 +43,8 @@ namespace SevenAndFiveBot.Commands.Help
             return this;
         }
 
-        // this method is called third, it is used when currently 
-        // processed group can be executed as a standalone command, 
+        // this method is called third, it is used when currently
+        // processed group can be executed as a standalone command,
         // otherwise not called
         public BaseHelpFormatter WithGroupExecutable()
         {
@@ -54,7 +54,7 @@ namespace SevenAndFiveBot.Commands.Help
             return this;
         }
 
-        // this method is called fourth, it sets the current command's 
+        // this method is called fourth, it sets the current command's
         // aliases. if no command is currently being processed, it won't
         // be called
         public BaseHelpFormatter WithAliases(IEnumerable<string> aliases)
@@ -66,8 +66,8 @@ namespace SevenAndFiveBot.Commands.Help
             return this;
         }
 
-        // this method is called fifth, it sets the current command's 
-        // arguments. if no command is currently being processed, it won't 
+        // this method is called fifth, it sets the current command's
+        // arguments. if no command is currently being processed, it won't
         // be called
         public BaseHelpFormatter WithArguments(IEnumerable<CommandArgument> arguments)
         {
@@ -80,7 +80,7 @@ namespace SevenAndFiveBot.Commands.Help
         }
 
         // this method is called sixth, it sets the current group's subcommands
-        // if no group is being processed or current command is not a group, it 
+        // if no group is being processed or current command is not a group, it
         // won't be called
         public override BaseHelpFormatter WithSubcommands(IEnumerable<Command> subcommands)
         {

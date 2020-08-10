@@ -42,7 +42,7 @@ namespace SevenAndFiveBot.Commands.CUser
         [Description("Получение бонуса(раз в день)")]
         public async Task Bonus(CommandContext ctx)
         {
-            User account = await Connector.FindUser(ctx.User.Id);
+            User account = Connector.FindUser(ctx.User.Id);
             if (account.DailyReward == Helper.getDailyTime())
                 throw new InvalidOperationException("Вы уже брали сегодня вознаграждение.");
             ctx.RespondAsync(embed: new DiscordEmbedBuilder() { Title = "Вы успешно взяли свою ежедневную наградуs в 50 космикскоинов.", Color = DiscordColor.Green }.Build());
@@ -55,12 +55,12 @@ namespace SevenAndFiveBot.Commands.CUser
         [Description("Передать деньги другому пользователю")]
         public async Task Transfer(CommandContext ctx, [Description("Пользователь")] DiscordUser transfered_to_user, [Description("Количество денег")] int money_transfer)
         {
-            User account = await Connector.FindUser(ctx.User.Id);
+            User account = Connector.FindUser(ctx.User.Id);
             if (money_transfer <= 0)
                 throw new InvalidOperationException("Сумма передачи должна быть больше нуля.");
             if (account.Money < money_transfer)
                 throw new InvalidOperationException("У вас недостаточно средств.");
-            User transfered_to_account = await Connector.FindUser(transfered_to_user.Id);
+            User transfered_to_account = Connector.FindUser(transfered_to_user.Id);
             await account.addMoney(-money_transfer);
             await transfered_to_account.addMoney(money_transfer);
             await ctx.RespondAsync(embed: Helper.SuccessEmbed($"Успешно передано {money_transfer} космикскоинов пользователю {transfered_to_user.Username}#{transfered_to_user.Discriminator}"));
@@ -118,7 +118,7 @@ namespace SevenAndFiveBot.Commands.CUser
         [Hidden]
         public async Task Level_Up(CommandContext ctx)
         {
-            User account = await Connector.FindUser(ctx.User.Id);
+            User account = Connector.FindUser(ctx.User.Id);
             await account.addLevel();
         }
 
@@ -126,7 +126,7 @@ namespace SevenAndFiveBot.Commands.CUser
         {
             if (ctx.User.Id == user.Id)
                 throw new InvalidOperationException("Охуел отправлять сам себе реп?");
-            User current_user = await Connector.FindUser(ctx.User.Id);
+            User current_user = Connector.FindUser(ctx.User.Id);
             Reps reps_user = await Connector.FindRep(user.Id);
             TypeOfRep rep = reps_user.hasUser((uint)current_user.Id);
             if (rep == type)
@@ -139,7 +139,7 @@ namespace SevenAndFiveBot.Commands.CUser
 
         public async Task<DiscordEmbed> GetProfilePretty(DiscordUser user)
         {
-            User account = await Connector.FindUser(user.Id);
+            User account = Connector.FindUser(user.Id);
             DiscordEmbedBuilder builder = new DiscordEmbedBuilder()
             {
                 Author = new EmbedAuthor() { Name = user.Username + "#" + user.Discriminator, Url = "https://discordapp.com", IconUrl = user.AvatarUrl },

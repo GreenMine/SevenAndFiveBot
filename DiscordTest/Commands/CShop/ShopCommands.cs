@@ -57,7 +57,7 @@ namespace SevenAndFiveBot.Commands.CShop
             if (item_id == 0 || ShopWorker.Items.Count <= item_id - 1)
                 throw new InvalidOperationException("Неверно указана айди предмета.");
             ShopItem current_item = ShopWorker.getItemById(item_id - 1);
-            User account = await Connector.FindUser(ctx.User.Id);
+            User account = Connector.FindUser(ctx.User.Id);
 
             if (account.Money < current_item.Price)
                 throw new InvalidOperationException("Недостаточно средств.");
