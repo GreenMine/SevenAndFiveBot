@@ -95,7 +95,7 @@ dsadasdkjasd
                 
             });
             //discord.MessageCreated += Discord_MessageCreated;
-            discord.VoiceStateUpdated += Discord_VoiceStateUpdated;
+            discord.VoiceStateUpdated += Discord_VoiceStateUpdated;dsadas
             discord.GuildMemberAdded += Discord_GuildMemberAdded;
 
             var deps = new ServiceCollection()
