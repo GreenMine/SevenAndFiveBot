@@ -43,6 +43,7 @@ namespace SevenAndFiveBot.Commands.CUser
         public async Task Bonus(CommandContext ctx)
         {
             User account = Connector.FindUser(ctx.User.Id);
+			Console.WriteLine(account.DailyReward + " " + Helper.getDailyTime());
             if (account.DailyReward == Helper.getDailyTime())
                 throw new InvalidOperationException("Вы уже брали сегодня вознаграждение.");
             ctx.RespondAsync(embed: new DiscordEmbedBuilder() { Title = "Вы успешно взяли свою ежедневную наградуs в 50 космикскоинов.", Color = DiscordColor.Green }.Build());

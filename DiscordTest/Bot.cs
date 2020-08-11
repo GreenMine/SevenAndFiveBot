@@ -5,7 +5,6 @@ using DSharpPlus.Entities;
 using MySql.Data.MySqlClient;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using static SevenAndFiveBot.Entities.PrivateSystem;
@@ -79,19 +78,13 @@ namespace SevenAndFiveBot
             tempRoles = new FileList<Roles>("tempRoles.json");
             mute = new FileList<Mute>("mute.json");
 
-			MySqlConnectionStringBuilder connBuilder = new MySqlConnectionStringBuilder();
-			connBuilder.Server = System.Net.Dns.GetHostEntry("eu-cdbr-west-03.cleardb.net").AddressList[0].ToString();
-			connBuilder.UserID = "bdbec8bf261377";
-			connBuilder.Password = "4d06e369";
-			connBuilder.Database = "heroku_2251c7932429166";
-            MySqlConnection connection = new MySqlConnection(connBuilder.ToString());
+			string conn_string = $"server={System.Net.Dns.GetHostEntry("eu-cdbr-west-03.cleardb.net").AddressList[0].ToString()};user=bdbec8bf261377;database=heroku_2251c7932429166;port=3306;password=4d06e369;default command timeout=3600;";
+            MySqlConnection connection = new MySqlConnection(conn_string);
             connector = new AccountConnector(connection);
             connector.LevelUpdate += Connector_LevelUpdate;
             connection.Open();
-
+dsadasdkjasd
             shop = new ShopWorker(connection);
-
-			User u = connector.FindUser(144686801687281664);
 
             discord = new DiscordClient(new DiscordConfiguration
             {
@@ -223,6 +216,7 @@ namespace SevenAndFiveBot
         {
             while (true)
             {
+				for(int x = 0; x < 8; x++) Console.WriteLine(connector.users.buffer[x].UserId + " " + connector.users.buffer[x].Money);
                 for (int i = private_channels.Count - 1; i >= 0; i--)
                 {
                     DiscordChannel channel = private_channels[i].channel;

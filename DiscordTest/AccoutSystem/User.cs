@@ -84,7 +84,8 @@ namespace SevenAndFiveBot.AccoutSystem
         }
         public async Task setDailyReward()
         {
-            await worker.UpdateValueAsync(Id, "daily_reward", Helper.getDailyTime());
+			DailyReward = Helper.getDailyTime();
+            await worker.UpdateValueAsync(Id, "daily_reward", DailyReward);
         }
 
         public string getPrettyOnline()

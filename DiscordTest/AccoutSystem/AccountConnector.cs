@@ -15,7 +15,7 @@ namespace SevenAndFiveBot.AccoutSystem
     class AccountConnector
     {
         internal MySqlWorker worker;
-		private CircleBuffer<User> users = new CircleBuffer<User>(new User(null));
+		public CircleBuffer<User> users = new CircleBuffer<User>(new User(null));
 
         public event Action<User> LevelUpdate;
         public AccountConnector(MySqlConnection conn)

@@ -32,8 +32,8 @@ namespace SevenAndFiveBot.AccoutSystem.Entities
 
         private async Task<DataRow> sendRequest(string request)
         {
-			Console.WriteLine("Request:\t" + request);
             MySqlCommand mysql_request = new MySqlCommand(request, connection);
+//			mysql_request.CommandTimeout = 200;
             DbDataReader reader = await mysql_request.ExecuteReaderAsync();
             if (reader.HasRows)
             {
@@ -50,6 +50,7 @@ namespace SevenAndFiveBot.AccoutSystem.Entities
         {
             DateTime now = DateTime.Now;
             MySqlCommand request = new MySqlCommand("INSERT INTO `users` (`user_id`, `money`, `voice_online`, `level`, `daily_reward`, `warn`, `list_plus_rep`, `list_minus_rep`) VALUES ('" + user_id + "', '0', '0', '0', '" + Helper.getDailyTime() + "', '0', '', '');SELECT LAST_INSERT_ID();", connection);
+//			request.CommandTimeout = 200;
             ulong id = (ulong)await request.ExecuteScalarAsync();
             return new User(this) { Id = id, UserId = user_id };
         }
@@ -57,18 +58,21 @@ namespace SevenAndFiveBot.AccoutSystem.Entities
         public async Task UpdateValueAsync(ulong id, string field, object value)
         {
             MySqlCommand request = new MySqlCommand("UPDATE `users` SET `" + field + "` = '" + value + "' WHERE `id` = " + id, connection);
+//			request.CommandTimeout = 200;
             await request.ExecuteNonQueryAsync();
         }
 
         public async Task UpdateRepsAsync(ulong id, string field, string list, bool minus = false)
         {
             MySqlCommand request = new MySqlCommand("UPDATE `users` SET `list_" + field + "` = '" + list + "', `" + field + "` = `" + field + "` " + (minus ? "- 1" : "+ 1") + " WHERE `id` = " + id, connection);
+//			request.CommandTimeout = 200;
             await request.ExecuteNonQueryAsync();
         }
 
         public async IAsyncEnumerable<TopReturn> getTopByDesc(string by, int count)
         {
             MySqlCommand request = new MySqlCommand("SELECT user_id, " + by + " FROM `users` ORDER BY `" + by + "` DESC LIMIT " + count, connection);
+//			request.CommandTimeout = 200;
             DbDataReader reader = await request.ExecuteReaderAsync();
             while(await reader.ReadAsync())
             {
@@ -87,6 +91,7 @@ namespace SevenAndFiveBot.AccoutSystem.Entities
         /*        public async Task<object> GetValueAsync(ulong user_id, string field)
                 {
                     MySqlCommand request = new MySqlCommand("SELECT " + field + " FROM `users` WHERE `user_id` = " + user_id);
+//					request.CommandTimeout = 200;
                     return await request.ExecuteScalarAsync();
                 }*/
     }
