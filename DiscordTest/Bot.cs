@@ -83,7 +83,7 @@ namespace SevenAndFiveBot
             connector = new AccountConnector(connection);
             connector.LevelUpdate += Connector_LevelUpdate;
             connection.Open();
-dsadasdkjasd
+
             shop = new ShopWorker(connection);
 
             discord = new DiscordClient(new DiscordConfiguration
@@ -95,7 +95,7 @@ dsadasdkjasd
                 
             });
             //discord.MessageCreated += Discord_MessageCreated;
-            discord.VoiceStateUpdated += Discord_VoiceStateUpdated;dsadas
+            discord.VoiceStateUpdated += Discord_VoiceStateUpdated;
             discord.GuildMemberAdded += Discord_GuildMemberAdded;
 
             var deps = new ServiceCollection()
