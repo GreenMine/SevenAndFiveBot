@@ -135,6 +135,7 @@ namespace SevenAndFiveBot.Commands.CUser
             if(rep != (TypeOfRep)(-1))
                 reps_user.deleteRep((uint)current_user.Id, rep);
             reps_user.addRep((uint)current_user.Id, type);
+			Connector.FindUser(user.Id).addRep(type);
             await ctx.RespondAsync(embed: Helper.SuccessEmbed("Успешно отправлен реп."));
         }
 

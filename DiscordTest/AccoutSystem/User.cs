@@ -64,16 +64,14 @@ namespace SevenAndFiveBot.AccoutSystem
             worker.connector.InvokeLevel(this);
         }
 
-        public async Task addRep(TypeOfRep type)
+        public void addRep(TypeOfRep type)
         {
             if (type == TypeOfRep.Plus)
             {
                 PlusRep++;
-                await worker.UpdateValueAsync(Id, "plus_rep", PlusRep);
             }else
             {
                 MinusRep++;
-                await worker.UpdateValueAsync(Id, "minus_rep", MinusRep);
             }
         }
 

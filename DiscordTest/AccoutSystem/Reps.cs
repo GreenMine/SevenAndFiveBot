@@ -12,8 +12,6 @@ namespace SevenAndFiveBot.AccoutSystem
         private MySqlWorker Worker;
 
         public ulong Id = 0;
-        public uint PlusRep = 0;
-        public uint MinusRep = 0;
         public List<uint> ListPlusRep;
         public List<uint> ListMinusRep;
 

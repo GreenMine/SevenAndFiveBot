@@ -78,6 +78,7 @@ namespace SevenAndFiveBot
             tempRoles = new FileList<Roles>("tempRoles.json");
             mute = new FileList<Mute>("mute.json");
 
+//			string conn_string = "server=localhost;user=root;database=sevenandfive;port=3306;password=;default command timeout=3600;";
 			string conn_string = $"server={System.Net.Dns.GetHostEntry("eu-cdbr-west-03.cleardb.net").AddressList[0].ToString()};user=bdbec8bf261377;database=heroku_2251c7932429166;port=3306;password=4d06e369;default command timeout=3600;";
             MySqlConnection connection = new MySqlConnection(conn_string);
             connector = new AccountConnector(connection);

@@ -54,17 +54,17 @@ namespace SevenAndFiveBot.AccoutSystem
                 await worker.CreateUser(user_id);
                 user_row = await worker.GetReps(user_id);
             }
-            return ToReps(user_row); 
+            return ToReps(user_row);
         }
 
         private User ToUser(DataRow table)
         {
-            return new User(this.worker) { Id = Convert.ToUInt64(table["id"]), UserId = (ulong)table["user_id"], Money = (int)table["money"], VoiceOnline = (uint)table["voice_online"], Level = (uint)table["level"], DailyReward = table["daily_reward"].ToString(), Warns = (short)table["warn"], PlusRep = (uint)table["plus_rep"], MinusRep = (uint)table["minus_rep"] };
+            return new User(this.worker) { Id = Convert.ToUInt64(table["id"]), UserId = (ulong)table["user_id"], Money = (int)table["money"], VoiceOnline = (uint)table["voice_online"], Level = (uint)table["level"], DailyReward = table["daily_reward"].ToString(), Warns = (short)table["warn"] };
         }
 
         private Reps ToReps(DataRow table)
         {
-            return new Reps(this.worker) { Id = Convert.ToUInt64(table["id"]), PlusRep = (uint)table["plus_rep"], MinusRep = (uint)table["minus_rep"], ListPlusRep = StringToList(table["list_plus_rep"]), ListMinusRep = StringToList(table["list_minus_rep"]) };
+            return new Reps(this.worker) { Id = Convert.ToUInt64(table["id"]), ListPlusRep = StringToList(table["list_plus_rep"]), ListMinusRep = StringToList(table["list_minus_rep"]) };
         }
 
         public void InvokeLevel(User user)
