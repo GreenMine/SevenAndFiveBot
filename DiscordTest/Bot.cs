@@ -217,7 +217,7 @@ namespace SevenAndFiveBot
         {
             while (true)
             {
-				for(int x = 0; x < 8; x++) Console.WriteLine(connector.users.buffer[x].UserId + " " + connector.users.buffer[x].Money);
+//				for(int x = 0; x < 8; x++) Console.WriteLine(connector.users.buffer[x].UserId + " " + connector.users.buffer[x].Money);
                 for (int i = private_channels.Count - 1; i >= 0; i--)
                 {
                     DiscordChannel channel = private_channels[i].channel;
